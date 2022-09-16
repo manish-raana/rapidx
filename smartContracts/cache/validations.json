@@ -1,0 +1,623 @@
+{
+  "version": "3.2",
+  "log": [
+    {
+      "ERC20": {
+        "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:35",
+        "version": {
+          "withMetadata": "c986056eac6993d747aac78e27c675ff5f1435b20e119f032133b45cb782c7aa",
+          "withoutMetadata": "2b24d0496d2d4a0da4442b75304ad90c5b41d91304a08fd1ac8bddafe7dc65c7",
+          "linkedWithoutMetadata": "2b24d0496d2d4a0da4442b75304ad90c5b41d91304a08fd1ac8bddafe7dc65c7"
+        },
+        "inherit": [
+          "IERC20Metadata",
+          "IERC20",
+          "Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "(string,string)",
+          "name()",
+          "symbol()",
+          "decimals()",
+          "totalSupply()",
+          "balanceOf(address)",
+          "transfer(address,uint256)",
+          "allowance(address,address)",
+          "approve(address,uint256)",
+          "transferFrom(address,address,uint256)",
+          "increaseAllowance(address,uint256)",
+          "decreaseAllowance(address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "ERC20",
+            "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:54"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "contract": "ERC20",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:36"
+            },
+            {
+              "contract": "ERC20",
+              "label": "_allowances",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+              "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:38"
+            },
+            {
+              "contract": "ERC20",
+              "label": "_totalSupply",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:40"
+            },
+            {
+              "contract": "ERC20",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:42"
+            },
+            {
+              "contract": "ERC20",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:43"
+            }
+          ],
+          "types": {
+            "t_mapping(t_address,t_uint256)": {
+              "label": "mapping(address => uint256)"
+            },
+            "t_address": {
+              "label": "address"
+            },
+            "t_uint256": {
+              "label": "uint256"
+            },
+            "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+              "label": "mapping(address => mapping(address => uint256))"
+            },
+            "t_string_storage": {
+              "label": "string"
+            }
+          },
+          "layoutVersion": "1.1"
+        }
+      },
+      "IERC20": {
+        "src": "@openzeppelin/contracts/token/ERC20/IERC20.sol:9",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "totalSupply()",
+          "balanceOf(address)",
+          "transfer(address,uint256)",
+          "allowance(address,address)",
+          "approve(address,uint256)",
+          "transferFrom(address,address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.1"
+        }
+      },
+      "IERC20Metadata": {
+        "src": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol:13",
+        "inherit": [
+          "IERC20"
+        ],
+        "libraries": [],
+        "methods": [
+          "name()",
+          "symbol()",
+          "decimals()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.1"
+        }
+      },
+      "Context": {
+        "src": "@openzeppelin/contracts/utils/Context.sol:16",
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.1"
+        }
+      }
+    },
+    {
+      "ERC20": {
+        "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:35",
+        "version": {
+          "withMetadata": "96b1972c6d5add2b86bb53ff73f8b926501b4388f262b265c467ab95786b07c4",
+          "withoutMetadata": "575c5160413ce582addde4a211c5258ab8c1045af2eeee360192553893308724",
+          "linkedWithoutMetadata": "575c5160413ce582addde4a211c5258ab8c1045af2eeee360192553893308724"
+        },
+        "inherit": [
+          "IERC20Metadata",
+          "IERC20",
+          "Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "(string,string)",
+          "name()",
+          "symbol()",
+          "decimals()",
+          "totalSupply()",
+          "balanceOf(address)",
+          "transfer(address,uint256)",
+          "allowance(address,address)",
+          "approve(address,uint256)",
+          "transferFrom(address,address,uint256)",
+          "increaseAllowance(address,uint256)",
+          "decreaseAllowance(address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "ERC20",
+            "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:54"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "contract": "ERC20",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:36"
+            },
+            {
+              "contract": "ERC20",
+              "label": "_allowances",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+              "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:38"
+            },
+            {
+              "contract": "ERC20",
+              "label": "_totalSupply",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:40"
+            },
+            {
+              "contract": "ERC20",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:42"
+            },
+            {
+              "contract": "ERC20",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin/contracts/token/ERC20/ERC20.sol:43"
+            }
+          ],
+          "types": {
+            "t_mapping(t_address,t_uint256)": {
+              "label": "mapping(address => uint256)"
+            },
+            "t_address": {
+              "label": "address"
+            },
+            "t_uint256": {
+              "label": "uint256"
+            },
+            "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+              "label": "mapping(address => mapping(address => uint256))"
+            },
+            "t_string_storage": {
+              "label": "string"
+            }
+          },
+          "layoutVersion": "1.1"
+        }
+      },
+      "IERC20": {
+        "src": "@openzeppelin/contracts/token/ERC20/IERC20.sol:9",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "totalSupply()",
+          "balanceOf(address)",
+          "transfer(address,uint256)",
+          "allowance(address,address)",
+          "approve(address,uint256)",
+          "transferFrom(address,address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.1"
+        }
+      },
+      "IERC20Metadata": {
+        "src": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol:13",
+        "inherit": [
+          "IERC20"
+        ],
+        "libraries": [],
+        "methods": [
+          "name()",
+          "symbol()",
+          "decimals()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.1"
+        }
+      },
+      "Context": {
+        "src": "@openzeppelin/contracts/utils/Context.sol:16",
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.1"
+        }
+      },
+      "LPTokens": {
+        "src": "contracts/LPTokens.sol:6",
+        "version": {
+          "withMetadata": "731850f220c7d7c1016759feeaa740be00a19481c367abc547b0183e08b70dbf",
+          "withoutMetadata": "2d4be2e1628509941af239928255c7fc45602f8ce89b5c224e7d60b13ae863fe",
+          "linkedWithoutMetadata": "2d4be2e1628509941af239928255c7fc45602f8ce89b5c224e7d60b13ae863fe"
+        },
+        "inherit": [
+          "ERC20",
+          "IERC20Metadata",
+          "IERC20",
+          "Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "(string,string,uint256)",
+          "lpMint(address,uint256)",
+          "lpBurn(address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "LPTokens",
+            "src": "contracts/LPTokens.sol:10"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "contract": "LPTokens",
+              "label": "lpTokenAdmin",
+              "type": "t_address",
+              "src": "contracts/LPTokens.sol:8"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address"
+            }
+          },
+          "layoutVersion": "1.1"
+        }
+      },
+      "RapidProtocol": {
+        "src": "contracts/RapidProtocol.sol:9",
+        "version": {
+          "withMetadata": "ba9a3e4f32c623f752f626a78389edca16b331f9052a10a399770f8613f63ef4",
+          "withoutMetadata": "d7b1141be4520c9b6b58228b79ef37ddeb33f53bd3abb9352dba9b1d6ef63c5b",
+          "linkedWithoutMetadata": "d7b1141be4520c9b6b58228b79ef37ddeb33f53bd3abb9352dba9b1d6ef63c5b"
+        },
+        "inherit": [
+          "ERC20",
+          "IERC20Metadata",
+          "IERC20",
+          "Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "(string,string)",
+          "addFiatToken(bytes32,address)",
+          "getFiatTokens()",
+          "addLPToken(bytes32,address)",
+          "getLPTokens()",
+          "addLiquidity(uint256,address,bytes32,bytes32,uint256)",
+          "transferFiat(uint256,address,bytes32)",
+          "withdrawLiquidity(uint256,address,bytes32)",
+          "getLiquidityFeeAccruced(address,bytes32)",
+          "calculateFee(uint256,bytes32)",
+          "calculateFeeInAmount(uint256,uint256,bytes32)",
+          "getLPFee(bytes32)",
+          "getIPFee(bytes32)",
+          "withdrawRequest(uint256,address,bytes32)",
+          "getSuppliedLiquidity(bytes32)",
+          "getLiquidity(address,bytes32)",
+          "setBaseDivisor(uint256)",
+          "setEquilibriumFee(uint256)",
+          "setLiquidityFactor(uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "RapidProtocol",
+            "src": "contracts/RapidProtocol.sol:54"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "equilibriumFee",
+            "src": "contracts/RapidProtocol.sol:33"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "liquidityFactor",
+            "src": "contracts/RapidProtocol.sol:34"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "BASE_DIVISOR",
+            "src": "contracts/RapidProtocol.sol:35"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "FEE_DIVISOR",
+            "src": "contracts/RapidProtocol.sol:36"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "contract": "RapidProtocol",
+              "label": "withdrawRequests",
+              "type": "t_mapping(t_uint256,t_struct(WithdrawRequest)766_storage)",
+              "src": "contracts/RapidProtocol.sol:23"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "requestCounter",
+              "type": "t_uint256",
+              "src": "contracts/RapidProtocol.sol:24"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "token",
+              "type": "t_contract(ERC20)545",
+              "src": "contracts/RapidProtocol.sol:26"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "admin",
+              "type": "t_address",
+              "src": "contracts/RapidProtocol.sol:27"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "fiatTokens",
+              "type": "t_mapping(t_bytes32,t_struct(Token)757_storage)",
+              "src": "contracts/RapidProtocol.sol:28"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "lpTokens",
+              "type": "t_mapping(t_bytes32,t_struct(Token)757_storage)",
+              "src": "contracts/RapidProtocol.sol:29"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "fiatTokenList",
+              "type": "t_array(t_bytes32)dyn_storage",
+              "src": "contracts/RapidProtocol.sol:30"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "lpTokenList",
+              "type": "t_array(t_bytes32)dyn_storage",
+              "src": "contracts/RapidProtocol.sol:31"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "equilibriumFee",
+              "type": "t_uint256",
+              "src": "contracts/RapidProtocol.sol:33"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "liquidityFactor",
+              "type": "t_uint256",
+              "src": "contracts/RapidProtocol.sol:34"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "BASE_DIVISOR",
+              "type": "t_uint256",
+              "src": "contracts/RapidProtocol.sol:35"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "FEE_DIVISOR",
+              "type": "t_uint256",
+              "src": "contracts/RapidProtocol.sol:36"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "suppliedLiquidity",
+              "type": "t_mapping(t_bytes32,t_uint256)",
+              "src": "contracts/RapidProtocol.sol:38"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "lpFeePool",
+              "type": "t_mapping(t_bytes32,t_uint256)",
+              "src": "contracts/RapidProtocol.sol:39"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "ipFeePool",
+              "type": "t_mapping(t_bytes32,t_uint256)",
+              "src": "contracts/RapidProtocol.sol:40"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "totalLPfee",
+              "type": "t_uint256",
+              "src": "contracts/RapidProtocol.sol:42"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "totalIPfee",
+              "type": "t_uint256",
+              "src": "contracts/RapidProtocol.sol:43"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "liquidityProvider",
+              "type": "t_mapping(t_address,t_mapping(t_bytes32,t_uint256))",
+              "src": "contracts/RapidProtocol.sol:45"
+            },
+            {
+              "contract": "RapidProtocol",
+              "label": "lpFee2Withdraw",
+              "type": "t_mapping(t_address,t_mapping(t_bytes32,t_uint256))",
+              "src": "contracts/RapidProtocol.sol:46"
+            }
+          ],
+          "types": {
+            "t_mapping(t_uint256,t_struct(WithdrawRequest)766_storage)": {
+              "label": "mapping(uint256 => struct RapidProtocol.WithdrawRequest)"
+            },
+            "t_uint256": {
+              "label": "uint256"
+            },
+            "t_struct(WithdrawRequest)766_storage": {
+              "label": "struct RapidProtocol.WithdrawRequest",
+              "members": [
+                {
+                  "label": "amount",
+                  "type": "t_uint256"
+                },
+                {
+                  "label": "to",
+                  "type": "t_address"
+                },
+                {
+                  "label": "tokenSymbol",
+                  "type": "t_bytes32"
+                },
+                {
+                  "label": "timestamp",
+                  "type": "t_uint256"
+                }
+              ]
+            },
+            "t_address": {
+              "label": "address"
+            },
+            "t_bytes32": {
+              "label": "bytes32"
+            },
+            "t_contract(ERC20)545": {
+              "label": "contract ERC20"
+            },
+            "t_mapping(t_bytes32,t_struct(Token)757_storage)": {
+              "label": "mapping(bytes32 => struct RapidProtocol.Token)"
+            },
+            "t_struct(Token)757_storage": {
+              "label": "struct RapidProtocol.Token",
+              "members": [
+                {
+                  "label": "symbol",
+                  "type": "t_bytes32"
+                },
+                {
+                  "label": "tokenAddress",
+                  "type": "t_address"
+                }
+              ]
+            },
+            "t_array(t_bytes32)dyn_storage": {
+              "label": "bytes32[]"
+            },
+            "t_mapping(t_bytes32,t_uint256)": {
+              "label": "mapping(bytes32 => uint256)"
+            },
+            "t_mapping(t_address,t_mapping(t_bytes32,t_uint256))": {
+              "label": "mapping(address => mapping(bytes32 => uint256))"
+            }
+          },
+          "layoutVersion": "1.1"
+        }
+      },
+      "TokenisedFiat": {
+        "src": "contracts/TokenisedFiat.sol:6",
+        "version": {
+          "withMetadata": "ab3c344ea1a444da540a36e1acb8ece1270255106ef1e69fe3654e1b0669c096",
+          "withoutMetadata": "1c73f2b86a8554917fc19b39ba7444f09a20059a295262c0063ad4d3953aecfb",
+          "linkedWithoutMetadata": "1c73f2b86a8554917fc19b39ba7444f09a20059a295262c0063ad4d3953aecfb"
+        },
+        "inherit": [
+          "ERC20",
+          "IERC20Metadata",
+          "IERC20",
+          "Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "(string,string,uint256)",
+          "fMint(address,uint256)",
+          "fBurn(address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "TokenisedFiat",
+            "src": "contracts/TokenisedFiat.sol:10"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "contract": "TokenisedFiat",
+              "label": "faitTokenAdmin",
+              "type": "t_address",
+              "src": "contracts/TokenisedFiat.sol:8"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address"
+            }
+          },
+          "layoutVersion": "1.1"
+        }
+      }
+    }
+  ]
+}
