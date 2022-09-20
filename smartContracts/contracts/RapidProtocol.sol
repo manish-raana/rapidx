@@ -30,12 +30,11 @@ contract RapidProtocol is ERC20 {
     bytes32[] public fiatTokenList;
     bytes32[] public lpTokenList;
 
-    uint public equilibriumFee = 20; // 20 basis points(1/100 percent) which means 0.2%(20/100)
-    uint public liquidityFactor = 2;
+    mapping(bytes32 => uint) internal equilibriumFee; // 20 basis points(1/100 percent) which means 0.2%(20/100)
+    mapping(bytes32 => uint) public liquidityFactor;
     uint256 private BASE_DIVISOR = 1000000;
     uint256 private FEE_DIVISOR = 10000;
     uint256 private BASE_FACTOR = 10**18;
-
 
     mapping(bytes32 => uint) public suppliedLiquidity;
     mapping(bytes32 => uint) public lpFeePool;
@@ -96,25 +95,37 @@ contract RapidProtocol is ERC20 {
     }
 
     // supply liquidity to Rapid Pool Contract
+    // 1. user will send his fiat tokens to contract (tokensnised FIat : Transfer function ) - AMount
+    // 2. addLiquidity by admin to transfer LP tokens from Contract to USER
 
-    function addLiquidity(uint amount, address to, bytes32 fiatSymbol, bytes32 lpSymbol, uint ratio) public fiatTokenExist(fiatSymbol) lpTokenExist(lpSymbol) onlyAdmin {
+    function addLiquidity(uint amount, address to, bytes32 fiatSymbol, bytes32 lpSymbol, uint ratio) public fiatTokenExist(fiatSymbol) lpTokenExist(lpSymbol){
+        uint allowanceAmount = ERC20(fiatTokens[fiatSymbol].tokenAddress).allowance(to, address(this));
+        require(allowanceAmount>=amount, "amount is greater than allowance amount");
+        ERC20(fiatTokens[fiatSymbol].tokenAddress).transferFrom(to,address(this),amount*ratio);
         ERC20(lpTokens[lpSymbol].tokenAddress).transfer(to, amount*ratio);
         suppliedLiquidity[fiatSymbol] += amount;  
         liquidityProvider[to][fiatSymbol]+= amount;
 
-        emit AddLiquidity(amount,to,fiatSymbol,lpSymbol);      
+        emit AddLiquidity(amount,to,fiatSymbol,lpSymbol);   
     }  
 
     // trnasfer fiat tokens from Rapid Pool Contract to recipient
 
     function transferFiat(address to, uint destinationAmount, bytes32 destinationFiatSymbol, uint sourceAmount, bytes32 sourceFiatSymbol) public fiatTokenExist(destinationFiatSymbol) onlyAdmin {
+            uint equiFee ;
+
+            if (equilibriumFee[destinationFiatSymbol] < 20)
+                equiFee = 20;
+            else            
+		        equiFee = equilibriumFee[destinationFiatSymbol];
+                
         uint cashBack = cashbackIPFees(sourceAmount,sourceFiatSymbol);
         uint transactionFee = calculateFee(destinationAmount,destinationFiatSymbol);
-        uint ipFee = transactionFee-equilibriumFee;
+        uint ipFee = transactionFee-equiFee;
 
      ipFeePool[sourceFiatSymbol] -= cashBack;
 
-     lpFeePool[destinationFiatSymbol] +=(equilibriumFee*destinationAmount)/10000;
+     lpFeePool[destinationFiatSymbol] +=(equiFee*destinationAmount)/10000;
 
      ipFeePool[destinationFiatSymbol] += (ipFee*destinationAmount)/10000;
      
@@ -126,13 +137,16 @@ contract RapidProtocol is ERC20 {
 
     // withdraw liquidity from recipient - trnasfer fiat tokens from Rapid Pool Contract to recipient
 
-    function withdrawLiquidity(uint amount, address to, bytes32 fiatSymbol) public fiatTokenExist(fiatSymbol) {
-     require(liquidityProvider[to][fiatSymbol] >= amount , "Withdrawal amount requested is more than supplied liquidity");
-     ERC20(fiatTokens[fiatSymbol].tokenAddress).transfer(to, amount);
-     withdrawLiquidityFee(to,fiatSymbol);
-     suppliedLiquidity[fiatSymbol] -= amount;
-     liquidityProvider[to][fiatSymbol]-= amount;
-     emit WithdrawLiquidity(amount,to,fiatSymbol); 
+    function withdrawLiquidity(uint amount, address to, bytes32 fiatSymbol, bytes32 lpSymbol) public fiatTokenExist(fiatSymbol) {
+        uint allowanceLpAmount = ERC20(lpTokens[lpSymbol].tokenAddress).allowance(to, address(this));
+        require(allowanceLpAmount>=amount, "withdrawl amount is greater than allowance amount");
+        ERC20(lpTokens[lpSymbol].tokenAddress).transferFrom(to,address(this),amount);
+        require(liquidityProvider[to][fiatSymbol] >= amount , "Withdrawal amount requested is more than supplied liquidity");
+        ERC20(fiatTokens[fiatSymbol].tokenAddress).transfer(to, amount);
+        withdrawLiquidityFee(to,fiatSymbol);
+        suppliedLiquidity[fiatSymbol] -= amount;
+        liquidityProvider[to][fiatSymbol]-= amount;
+        emit WithdrawLiquidity(amount,to,fiatSymbol); 
     }  
 
     function withdrawLiquidityFee(address to, bytes32 fiatSymbol) internal fiatTokenExist(fiatSymbol) {
@@ -144,6 +158,7 @@ contract RapidProtocol is ERC20 {
     }
 
     function getLiquidityFeeAccruced(address to, bytes32 fiatSymbol) public fiatTokenExist(fiatSymbol) view returns(uint feeEarned, uint shareEarned) {
+       require(suppliedLiquidity[fiatSymbol]>0 , "supplied liquidity is zero");
        uint feeAccrued = (liquidityProvider[to][fiatSymbol]*lpFeePool[fiatSymbol])/(suppliedLiquidity[fiatSymbol]);
        uint share = (liquidityProvider[to][fiatSymbol]*BASE_FACTOR)/(suppliedLiquidity[fiatSymbol]);
        return (feeAccrued,share);
@@ -152,17 +167,33 @@ contract RapidProtocol is ERC20 {
     // Transfer fee calculations
 
     function calculateFee(uint destinationAmount, bytes32 destinationSymbol) public onlyAdmin view returns(uint totalFee) {
-        uint currentLiquidity;
         require(fiatTokens[destinationSymbol].tokenAddress != address(0), "token does not exist");
+        
+        uint currentLiquidity;
+        uint equiFee ;
+
+            if (equilibriumFee[destinationSymbol] < 20)
+                equiFee = 20;
+            else            
+		        equiFee = equilibriumFee[destinationSymbol];
+
+
         currentLiquidity = ERC20(fiatTokens[destinationSymbol].tokenAddress).balanceOf(address(this)) - destinationAmount;
         
         if (currentLiquidity >= suppliedLiquidity[destinationSymbol])
-            return (equilibriumFee);
+            return (equiFee);
         else {
+            uint r;
+            if (liquidityFactor[destinationSymbol] < 2)
+                r =2;
+            else            
+                r = liquidityFactor[destinationSymbol];
+
             uint x = ((suppliedLiquidity[destinationSymbol] - currentLiquidity)*BASE_DIVISOR)/suppliedLiquidity[destinationSymbol];
-            uint feesInBasisPoints = equilibriumFee*((1000+((x*1000)/BASE_DIVISOR))**2)/BASE_DIVISOR;
+            uint feesInBasisPoints = equiFee*((1000+((x*1000)/BASE_DIVISOR))**r)/(BASE_DIVISOR*(1000**(r-2)));
             return (feesInBasisPoints);
         }
+        
     } 
 
     function calculateFeeAndCashback(uint sourceAmount, bytes32 sourceSymbol, uint destinationAmount, bytes32 destinationSymbol) public onlyAdmin view returns(uint totalFee, uint cashback) {
@@ -222,18 +253,23 @@ contract RapidProtocol is ERC20 {
        return liquidityProvider[user][symbol];
     }  
 
-
-
     function setBaseDivisor(uint bd) public onlyAdmin {
        BASE_DIVISOR = bd;
     }
 
-    function setEquilibriumFee(uint fee) public onlyAdmin {
-        equilibriumFee = fee;
+    function setLiquidityFactor(bytes32 fiatSymbol, uint factor) public onlyAdmin {
+       liquidityFactor[fiatSymbol] = factor;
     }
 
-    function setLiquidityFactor(uint lf) public onlyAdmin {
-        liquidityFactor = lf;
+    function setEquilibriumFee(bytes32 fiatSymbol, uint fee) public onlyAdmin {
+        equilibriumFee[fiatSymbol] = fee;
+    }
+
+    function getEquilibriumFee(bytes32 fiatSymbol) public view returns (uint fee) {
+        if(equilibriumFee[fiatSymbol] < 20)
+          return 20;
+        else
+          return equilibriumFee[fiatSymbol];
     }
 
     
