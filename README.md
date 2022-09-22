@@ -39,23 +39,30 @@ Buyer Currency: INR
 - Option to withdraw funds to bank account
 
 
- 
 ## Deployment details: (MAINNET)
 
-
-
-
+- Rapid Protocal deployed to: 0xE9Afc044917Ee2CbAF33Cb191284e170ad07B403 (https://polygonscan.com/address/0xE9Afc044917Ee2CbAF33Cb191284e170ad07B403)
+- euro Fiat Token deployed to: 0x62656Be046e02f3eE9B899d5a6b0be02da375A91 (https://polygonscan.com/address/0x62656Be046e02f3eE9B899d5a6b0be02da375A91)
+- rupee Fiat Token deployed to: 0x0eCc96Cb7DaCEcC04a53B91Ac102b51D5585C925 (https://polygonscan.com/address/0x0eCc96Cb7DaCEcC04a53B91Ac102b51D5585C925)
+- usd Fiat Token deployed to: 0xc42158cB1bd79732beD475d2C29A500E35e9dD5E (https://polygonscan.com/address/0xc42158cB1bd79732beD475d2C29A500E35e9dD5E)
+- euro LP Token deployed to: 0x18707b2b4857220A72F0392Fca5D5A6510D8966A (https://polygonscan.com/address/0x18707b2b4857220A72F0392Fca5D5A6510D8966A)
+- rupee LP Token deployed to: 0xf201DC6389AB9d0f82baAFf20b080466ab7346Ec (https://polygonscan.com/address/0xf201DC6389AB9d0f82baAFf20b080466ab7346Ec)
+- usd LP Token deployed to: 0x02C7C267131e94Cd3acC71B75817BCc897129a62 (https://polygonscan.com/address/0x02C7C267131e94Cd3acC71B75817BCc897129a62)
 
 
 ## Blockchain Tech Stack
 
-
+- ERC20 Token standard for Fiat tokens
+- LP Tokens and Governance Tokens
+- Rapid Smart Contract to add liquidity
+- withdraw liquidity and transfer function to do cross border Transactions.
 
 
 ## Sponsors used:
 
 - Moralis - Metamask authentication on frontend
 - ChainLink - Live price feed in smart contract
+- Sequence wallet for Web3 in User CheckOut page
 
 
 ## Front end tech stack
@@ -63,7 +70,4 @@ Buyer Currency: INR
 - NextJs
 - Tailwind.css
 - Ethers.js
-
-
-
 
