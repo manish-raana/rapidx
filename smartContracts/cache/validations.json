@@ -331,9 +331,9 @@
       "RapidProtocol": {
         "src": "contracts/RapidProtocol.sol:9",
         "version": {
-          "withMetadata": "ba9a3e4f32c623f752f626a78389edca16b331f9052a10a399770f8613f63ef4",
-          "withoutMetadata": "d7b1141be4520c9b6b58228b79ef37ddeb33f53bd3abb9352dba9b1d6ef63c5b",
-          "linkedWithoutMetadata": "d7b1141be4520c9b6b58228b79ef37ddeb33f53bd3abb9352dba9b1d6ef63c5b"
+          "withMetadata": "15936b6ad6148ae32bd2dafce3c15282cc89089262d5eb3575281dd5d59af8c6",
+          "withoutMetadata": "7c2a13bdf75a84bf23d6d12ef58c6a985191324237c1e780a9784e4d64a7c23e",
+          "linkedWithoutMetadata": "7c2a13bdf75a84bf23d6d12ef58c6a985191324237c1e780a9784e4d64a7c23e"
         },
         "inherit": [
           "ERC20",
@@ -349,10 +349,12 @@
           "addLPToken(bytes32,address)",
           "getLPTokens()",
           "addLiquidity(uint256,address,bytes32,bytes32,uint256)",
-          "transferFiat(uint256,address,bytes32)",
-          "withdrawLiquidity(uint256,address,bytes32)",
+          "transferFiat(address,uint256,bytes32,uint256,bytes32)",
+          "withdrawLiquidity(uint256,address,bytes32,bytes32)",
           "getLiquidityFeeAccruced(address,bytes32)",
           "calculateFee(uint256,bytes32)",
+          "calculateFeeAndCashback(uint256,bytes32,uint256,bytes32)",
+          "cashbackIPFees(uint256,bytes32)",
           "calculateFeeInAmount(uint256,uint256,bytes32)",
           "getLPFee(bytes32)",
           "getIPFee(bytes32)",
@@ -360,25 +362,16 @@
           "getSuppliedLiquidity(bytes32)",
           "getLiquidity(address,bytes32)",
           "setBaseDivisor(uint256)",
-          "setEquilibriumFee(uint256)",
-          "setLiquidityFactor(uint256)"
+          "setLiquidityFactor(bytes32,uint256)",
+          "setEquilibriumFee(bytes32,uint256)",
+          "getEquilibriumFee(bytes32)"
         ],
         "linkReferences": [],
         "errors": [
           {
             "kind": "constructor",
             "contract": "RapidProtocol",
-            "src": "contracts/RapidProtocol.sol:54"
-          },
-          {
-            "kind": "state-variable-assignment",
-            "name": "equilibriumFee",
-            "src": "contracts/RapidProtocol.sol:33"
-          },
-          {
-            "kind": "state-variable-assignment",
-            "name": "liquidityFactor",
-            "src": "contracts/RapidProtocol.sol:34"
+            "src": "contracts/RapidProtocol.sol:53"
           },
           {
             "kind": "state-variable-assignment",
@@ -389,6 +382,11 @@
             "kind": "state-variable-assignment",
             "name": "FEE_DIVISOR",
             "src": "contracts/RapidProtocol.sol:36"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "BASE_FACTOR",
+            "src": "contracts/RapidProtocol.sol:37"
           }
         ],
         "layout": {
@@ -444,13 +442,13 @@
             {
               "contract": "RapidProtocol",
               "label": "equilibriumFee",
-              "type": "t_uint256",
+              "type": "t_mapping(t_bytes32,t_uint256)",
               "src": "contracts/RapidProtocol.sol:33"
             },
             {
               "contract": "RapidProtocol",
               "label": "liquidityFactor",
-              "type": "t_uint256",
+              "type": "t_mapping(t_bytes32,t_uint256)",
               "src": "contracts/RapidProtocol.sol:34"
             },
             {
@@ -467,45 +465,39 @@
             },
             {
               "contract": "RapidProtocol",
-              "label": "suppliedLiquidity",
-              "type": "t_mapping(t_bytes32,t_uint256)",
-              "src": "contracts/RapidProtocol.sol:38"
+              "label": "BASE_FACTOR",
+              "type": "t_uint256",
+              "src": "contracts/RapidProtocol.sol:37"
             },
             {
               "contract": "RapidProtocol",
-              "label": "lpFeePool",
+              "label": "suppliedLiquidity",
               "type": "t_mapping(t_bytes32,t_uint256)",
               "src": "contracts/RapidProtocol.sol:39"
             },
             {
               "contract": "RapidProtocol",
-              "label": "ipFeePool",
+              "label": "lpFeePool",
               "type": "t_mapping(t_bytes32,t_uint256)",
               "src": "contracts/RapidProtocol.sol:40"
             },
             {
               "contract": "RapidProtocol",
-              "label": "totalLPfee",
-              "type": "t_uint256",
-              "src": "contracts/RapidProtocol.sol:42"
-            },
-            {
-              "contract": "RapidProtocol",
-              "label": "totalIPfee",
-              "type": "t_uint256",
-              "src": "contracts/RapidProtocol.sol:43"
+              "label": "ipFeePool",
+              "type": "t_mapping(t_bytes32,t_uint256)",
+              "src": "contracts/RapidProtocol.sol:41"
             },
             {
               "contract": "RapidProtocol",
               "label": "liquidityProvider",
               "type": "t_mapping(t_address,t_mapping(t_bytes32,t_uint256))",
-              "src": "contracts/RapidProtocol.sol:45"
+              "src": "contracts/RapidProtocol.sol:44"
             },
             {
               "contract": "RapidProtocol",
               "label": "lpFee2Withdraw",
               "type": "t_mapping(t_address,t_mapping(t_bytes32,t_uint256))",
-              "src": "contracts/RapidProtocol.sol:46"
+              "src": "contracts/RapidProtocol.sol:45"
             }
           ],
           "types": {
