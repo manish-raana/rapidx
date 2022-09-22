@@ -9,9 +9,12 @@ This repository contains two folders for smart contract and frontend
 
 ## TechStack Used For UI and Backend
 
-Next.js
-Tailwind.css
+Next.js - For API and Functional Development
+
+Tailwind.css - For Styling
+
 Moralis - For User Wallet Authentication
+
 Covalenthq - To fetch the transaction history of user transfers and ERC20 Transactions
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-tailwindcss&project-name=with-tailwindcss&repository-name=with-tailwindcss)
