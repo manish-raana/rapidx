@@ -52,13 +52,13 @@ Buyer Currency: INR
 
 
 
-## SPonsors used:
+## Sponsors used:
 
 Moralis - Metamask authentication on frontend
 ChainLink - Live price feed in smart contract
 
 
-## front end tech stack
+## Front end tech stack
 
 NextJs
 Tailwind.css
