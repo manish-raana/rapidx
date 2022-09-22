@@ -1,9 +1,9 @@
-### We are building a decentralized version of paypal. Paypal charges very high fees (4-10%) for cross border payments, limiting the ability of the ecommerce merchants to comptete internationally especially with big players.
+ We are building a decentralized version of paypal. Paypal charges very high fees (4-10%) for cross border payments, limiting the ability of the ecommerce merchants to comptete internationally especially with big players.
 
 
-### We have created a "Pay with RapidX" functionality for cross border payments use case. It reduces the transaction fee by 100X and is transparent compared to opaque and closed nature of paypal. rapidX is community driven as liquidity is crowsourced in the form of single local currency pools. Anyone with idle cash can provide liquidity and enjoy sustainable real yield.
+ We have created a "Pay with RapidX" functionality for cross border payments use case. It reduces the transaction fee by 100X and is transparent compared to opaque and closed nature of paypal. rapidX is community driven as liquidity is crowsourced in the form of single local currency pools. Anyone with idle cash can provide liquidity and enjoy sustainable real yield.
 
-### The project involves on-ramp and off-ramp of FIAT. It is acheived through the Open Banking Tools as it will drastically reduce the costs. Project involves tokenization of FIAT, swapping and de-tokenizing and off-ramp. 
+ The project involves on-ramp and off-ramp of FIAT. It is acheived through the Open Banking Tools as it will drastically reduce the costs. Project involves tokenization of FIAT, swapping and de-tokenizing and off-ramp. 
 
 
 ## Live demo Links (we deployed it to mainnet :D ):
