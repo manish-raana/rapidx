@@ -27,7 +27,7 @@ const Merchant = ({user}) => {
     const [LoggedIn, setLoggedIn] = useState(user ? true : false);
     const [IsLoading, setIsLoading] = useState(false);
     const getTransactions = async (address) => { 
-       const url = `https://api.covalenthq.com/v1/80001/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
+       const url = `${process.env.NEXT_PUBLIC_COVALENT_BASE_URL}/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
         const response = await axios.get(url);
         if (response && response.data && response.data.data)
         { 

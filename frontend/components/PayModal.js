@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import io from "socket.io-client";
 import QrModal from './QrModal';
-import { calculateFeeAndCashback, EtherToWei, formatHexToEther, WeiToEther } from '../utility/web3';
+import { calculateFeeAndCashback, EtherToWei, formatHexToEther, initRapidContract, WeiToEther } from '../utility/web3';
 import { ethers } from 'ethers';
 import { Circles } from "react-loading-icons";
 import { showWarning } from '../utility/notification'
@@ -181,7 +181,6 @@ const PayModal = ({ showModal, setShowModal, Wallet, WalletAddress, WalletBalanc
     }
     const calculateFee = async (sourceAmount, destinationAmount) => {
       //console.log(EtherToWei(sourceAmount.toString()), EtherToWei(destinationAmount.toString()));
-    
       const txnData = {
         sourceAmount: EtherToWei(sourceAmount.toString()),
         sourceSymbol: process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_SYMBOL,
@@ -204,14 +203,15 @@ const PayModal = ({ showModal, setShowModal, Wallet, WalletAddress, WalletBalanc
     const fetchCurrencyRate = async () => {
       try
       {
-        const rates = await axios.get("https://api.exchangerate.host/latest");
-        if (rates && rates.data && rates.data.rates)
-        {
-          euroToInrRate = rates.data.rates["INR"];
-          await setEuroRate(rates.data.rates["INR"]);
-          console.log("sourceAmount: ", ProductPrice * rates.data.rates["INR"]);
-          console.log("destinationAmount: ", ProductPrice );
-          calculateFee(ProductPrice, ProductPrice * rates.data.rates["INR"]);
+        const rapidContract = await initRapidContract();
+        const result = await rapidContract.getEURO2INRLatestPrice();
+        //console.log("result: ", result);
+        if (result) {
+          euroToInrRate = ethers.utils.formatUnits(result[0], 8);
+          await setEuroRate(parseFloat(euroToInrRate));
+          //console.log("sourceAmount: ", ProductPrice * rates.data.rates["INR"]);
+         // console.log("euroToInrRate: ", euroToInrRate);
+          calculateFee(ProductPrice, ProductPrice * euroToInrRate);
         }
       } catch (error)
       {
@@ -262,7 +262,7 @@ const initSocket = async () => {
     isSocketConn: true,
   };
   const response = await axios.post("/api/socket", data);
-  console.log(response);
+  //console.log(response);
 };
   useEffect(() => {
       console.log('init comp')
@@ -346,7 +346,7 @@ const initSocket = async () => {
                         </div>
                         <div className="flex justify-between text-sm mt-10">
                           <p>Current Rate</p>
-                          <p>1 Euro ≈ {EuroRate.toFixed(2)} INR</p>
+                          <p>1 Euro ≈ {EuroRate ? EuroRate?.toFixed(2): 0} INR</p>
                         </div>
                         <div>
                           <p>
