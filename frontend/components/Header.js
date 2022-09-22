@@ -1,10 +1,13 @@
 import React from "react";
 import { Circles } from "react-loading-icons";
+import Link  from 'next/link';
 const Header = ({ isLoading, LoggedIn, handleAuth, handleSignOut }) => {
   return (
     <header className="flex justify-between border-gray-700 backdrop-blur-0 items-center border-b px-10 py-2">
       <div className="text-center cursor-pointer">
-        <span className="text-5xl font-bold pt-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">RapidX</span>
+        <span className="text-5xl font-bold pt-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">
+          <Link href="/">RapidX</Link>
+        </span>
         <p className="text-gray-400 text-sm ">Payments Made Easy</p>
       </div>
       {!LoggedIn ? (

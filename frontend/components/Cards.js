@@ -3,6 +3,7 @@ import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
 import Table from "./Table";
 import { ethers } from "ethers";
+import { Circles } from "react-loading-icons";
 import axios from "axios";
 import {
   getLiquidity,
@@ -10,13 +11,17 @@ import {
   initInrContract,
   initEuroContract,
   initRapidContract,
+  initEuroLPContract,
+  initInrLPContract,
   getEuroTokenBalance,
   getInrTokenBalance,
   getFeeRewards,
   WeiToEther,
+  formatHexToEther,
 } from "../utility/web3";
-
+import moment from "moment";
 import { showSuccess, showError, showWarning } from "../utility/notification";
+import { getContractTxns } from "../utility/txns";
 import TxnDetail from "./TxnDetail";
 import TxnHistory from "./TxnHistory";
 const fiatCurrencyList = [
@@ -39,17 +44,10 @@ const liquidityCurrencyList = [
     contractAddress: process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS,
   },
 ];
-const txnTableRows = ["Date", "Time", "Txn (IN/OUT)", "Amount", "Txn Hash"];
+
 const liquidityTableRows = ["Token", "Supplied Liquidity", "Current Liquidity", "APR", "24H Trading Volume", "Utilisation"];
-const txnList = [
-  ["20, sept 2022", "10:30 AM", "Withdraw", "3000", "0xasjnjnd"],
-  ["20, sept 2022", "10:30 AM", "Withdraw", "3000", "0xasjnjnd"],
-];
-const liquidityData = [
-  ["INR_LP", "1000000", "100000", "0", "0", "10%"],
-  ["INR_LP", "1000000", "100000", "0", "0", "10%"],
-];
-const Cards = ({ address, addLiquidityByAdmin }) => {
+
+const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
   const [selectedLiquidityCurrency, setSelectedLiquidityCurrency] = useState(liquidityCurrencyList[0]);
   const [selectedFiatCurrency, setSelectedFiatCurrency] = useState(fiatCurrencyList[0]);
   const [selectedRewardCurrency, setSelectedRewardCurrency] = useState(fiatCurrencyList[0]);
@@ -57,45 +55,48 @@ const Cards = ({ address, addLiquidityByAdmin }) => {
   const [LiquidityAmount, setLiquidityAmount] = useState(100);
   const [InrLiquidity, setInrLiquidity] = useState(0);
   const [EuroLiquidity, setEuroLiquidity] = useState(0);
+  const [EuroVolume, setEuroVolume] = useState(0);
+  const [EuroUtilisation, setEuroUtilisation] = useState(0);
+  const [InrUtilisation, setInrUtilisation] = useState(0);
+  const [InrVolume, setInrVolume] = useState(0);
   const [InrTokenBalance, setInrTokenBalance] = useState(0);
   const [EuroTokenBalance, setEuroTokenBalance] = useState(0);
   const [InrFeeRewards, setInrFeeRewards] = useState(0);
   const [EuroFeeRewards, setEuroFeeRewards] = useState(0);
   const [LoadingState, setLoadingState] = useState(0);
   const [WithdrawLoadingState, setWithdrawLoadingState] = useState(false);
+  const [FundWithdrawLoadingState, setFundWithdrawLoadingState] = useState(false);
+  const [AddFundsLoadingState, setAddFundsLoadingState] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [TxnList, setTxnList] = useState([]);
   const [TxnData, setTxnData] = useState({});
 
-  const initEthers = async () => {
-    if (typeof window !== "undefined") {
-      //here `window` is available
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-      const accounts = await provider.send("eth_requestAccounts", []);
-      console.log(accounts[0]);
-      const signer = await provider.getSigner();
-      console.log(signer);
-    }
+  const sortFunction = (a, b) => {
+    var dateA = new Date(a.block_signed_at).getTime();
+    var dateB = new Date(b.block_signed_at).getTime();
+    return dateA > dateB ? 1 : -1;
   };
 
   const web3Data = async () => {
     const inrliq = await getLiquidity(address, process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_SYMBOL);
-    setInrLiquidity(inrliq);
+    setInrLiquidity(parseInt(inrliq));
     const euroliq = await getLiquidity(address, process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_SYMBOL);
-    setEuroLiquidity(euroliq);
+    setEuroLiquidity(parseInt(euroliq));
 
     const inrBalance = await getInrTokenBalance(address);
-    setInrTokenBalance(inrBalance);
+    setInrTokenBalance(parseInt(inrBalance));
 
     const euroBalance = await getEuroTokenBalance(address);
-    setEuroTokenBalance(euroBalance);
+    setEuroTokenBalance(parseInt(euroBalance));
 
     if (euroliq > 0) {
       const euroFeeRewards = await getFeeRewards(address, process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_SYMBOL);
+      console.log('euroFeeRewards: ',euroFeeRewards);
       setEuroFeeRewards(euroFeeRewards);
     }
     if (inrliq > 0) {
       const inrFeeRewards = await getFeeRewards(address, process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_SYMBOL);
+      console.log('inrFeeRewards: ',inrFeeRewards);
       setInrFeeRewards(inrFeeRewards);
     }
   };
@@ -106,7 +107,7 @@ const Cards = ({ address, addLiquidityByAdmin }) => {
     const url = `https://api.covalenthq.com/v1/80001/address/${address}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=true&key=ckey_df949d9e4c8243c1bc8af71a415`;
     const response = await axios.get(url);
     const balances = response && response.data && response.data.data && response.data.data.items;
-    console.log("balances: ", balances);
+    //console.log("balances: ", balances);
     const inrFiatData = balances.find((item) => item.contract_address.toLowerCase() === process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_ADDRESS.toLowerCase());
     inrFiatData && setInrTokenBalance(WeiToEther(inrFiatData.balance));
     const euroFiatData = balances.find(
@@ -123,21 +124,34 @@ const Cards = ({ address, addLiquidityByAdmin }) => {
   useEffect(() => {
     if (address) {
       web3Data();
-      getBalances(address);
-      initEthers();
+
+      //getBalances(address);
+      fetchTransactionHistory(address);
     }
   }, [address]);
 
+  const isAllowance = () => {
+    
+   }
   const addLiquidity = async () => {
     if (typeof window !== "undefined") {
       //here `window` is available
-      try {
+      try
+      {
+        /*  if (!InrIsApproved || !EuroIsApproved)
+        { 
+          showWarning(`Please aprrove to add liquidity`);
+          setLoadingState(0);
+          return;
+        } */
         if (selectedLiquidityCurrency.name == "INR" && parseInt(InrTokenBalance) < LiquidityAmount) {
           showWarning(`Low balance, Please Buy Some t${selectedLiquidityCurrency.name} Tokens`);
+          setLoadingState(0);
           return;
         }
         if (selectedLiquidityCurrency.name == "EURO" && parseInt(EuroTokenBalance) < LiquidityAmount) {
           showWarning(`Low balance, Please Buy Some t${selectedLiquidityCurrency.name} Tokens`);
+          setLoadingState(0);
           return;
         }
         setLoadingState(1);
@@ -152,40 +166,41 @@ const Cards = ({ address, addLiquidityByAdmin }) => {
         } else if (selectedLiquidityCurrency.name == "INR") {
           contract = await initInrContract();
         }
+        const allowance = await contract.allowance(accounts[0], process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS);
+        console.log("allowance:   ", formatHexToEther(allowance));
+
+        /* if (parseInt(formatHexToEther(allowance)) < LiquidityAmount) {
+          showWarning(`Your have allowance of ${formatHexToEther(allowance)} t${selectedLiquidityCurrency.name} Tokens. Please select a lower value`);
+          setLoadingState(0);
+          return;
+        } */
+        
         const contractWithSigner = await contract.connect(signer);
         console.log(contractWithSigner);
-
-        const tx = await contractWithSigner.transfer(process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS, EtherToWei(LiquidityAmount.toString()));
+        const txApprove = await contractWithSigner.approve(process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS, EtherToWei(LiquidityAmount.toString()));
         //console.log("tx:   ", tx);
+        const receiptApprove = txApprove && (await txApprove.wait());
+        if (receiptApprove) {
+          console.log("approve-receipt:  ", receiptApprove);
+        }
+         
+        const rapidContract = await initRapidContract();
+        const rapidContractWithSigner = await rapidContract.connect(signer);
+
+        const tx = await rapidContractWithSigner.addLiquidity(
+          EtherToWei(LiquidityAmount.toString()),
+          address,
+          selectedLiquidityCurrency.symbol,
+          selectedLiquidityCurrency.lpSymbol,
+          process.env.NEXT_PUBLIC_FEE_RATIO
+        );
+        console.log("tx:   ", tx);
         const receipt = tx && (await tx.wait());
         if (receipt) {
           console.log("receipt:  ", receipt);
-          setLoadingState(2);
-          const txdata = {
-            amount: EtherToWei(LiquidityAmount.toString()),
-            to: address,
-            fiatSymbol: selectedLiquidityCurrency.symbol,
-            lpSymbol: selectedLiquidityCurrency.lpSymbol,
-            ratio: 1,
-          };
-
-          const res = await addLiquidityByAdmin(txdata);
-          if (res) {
-            console.log("response:  ", res);
-            setTxnData({
-              address: address,
-              tokenSent: LiquidityAmount,
-              sentHash: receipt.transactionHash,
-              sendTokenSymbol: selectedLiquidityCurrency.name == "EURO" ? "tEuro" : "tInr",
-              tokenReceived: LiquidityAmount,
-              receivedTokenSymbol: selectedLiquidityCurrency.name == "EURO" ? "tEuroLP" : "tInrLP",
-              receivedHash: res.data && res.data.transactionHash,
-            });
-            setShowModal(true);
-            setLoadingState(0);
-            showSuccess("Liquidity added successfully!");
-            getBalances(address);
-          }
+          setLoadingState(0);
+          web3Data();
+           fetchTransactionHistory(accounts[0]);
         }
       } catch (error) {
         setLoadingState(0);
@@ -200,10 +215,12 @@ const Cards = ({ address, addLiquidityByAdmin }) => {
     setWithdrawLoadingState(true);
     if (selectedLiquidityCurrency.name === "EURO" && LiquidityAmount > EuroLiquidity) {
       showWarning("Not enough liquidity available");
+      setWithdrawLoadingState(false);
       return;
     }
     if (selectedLiquidityCurrency.name === "INR" && LiquidityAmount > InrLiquidity) {
       showWarning("Not enough liquidity available");
+      setWithdrawLoadingState(false);
       return;
     }
     if (typeof window !== "undefined") {
@@ -213,39 +230,251 @@ const Cards = ({ address, addLiquidityByAdmin }) => {
         //console.log(accounts[0]);
         const signer = await provider.getSigner();
         //console.log(signer);
-        var contract = await initRapidContract();
+        var contract;
+        if (selectedLiquidityCurrency.name == "EURO") {
+          contract = await initEuroLPContract();
+        } else if (selectedLiquidityCurrency.name == "INR") {
+          contract = await initInrLPContract();
+        }
+        /* const allowance = await contract.allowance(accounts[0], process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS);
+        console.log("allowance:   ", formatHexToEther(allowance));
+ */
+        /* if (parseInt(formatHexToEther(allowance)) < LiquidityAmount) {
+          showWarning(`Your have allowance of ${formatHexToEther(allowance)} t${selectedLiquidityCurrency.name} Tokens. Please select a lower value`);
+          setLoadingState(0);
+          return;
+        } */
 
         const contractWithSigner = await contract.connect(signer);
-        //console.log(contractWithSigner);
-        const tx = await contractWithSigner.withdrawLiquidity(EtherToWei(LiquidityAmount.toString()), address, selectedLiquidityCurrency.symbol);
+        console.log(contractWithSigner);
+        const txApprove = await contractWithSigner.approve(process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS, EtherToWei(LiquidityAmount.toString()));
         //console.log("tx:   ", tx);
+        const receiptApprove = txApprove && (await txApprove.wait());
+        if (receiptApprove) {
+          console.log("approve-receipt:  ", receiptApprove);
+        }
+
+        const rapidContract = await initRapidContract();
+        const rapidContractWithSigner = await rapidContract.connect(signer);
+        const tx = await rapidContractWithSigner.withdrawLiquidity(
+          EtherToWei(LiquidityAmount.toString()),
+          accounts[0],
+          selectedLiquidityCurrency.symbol,
+          selectedLiquidityCurrency.lpSymbol,
+        );
+        console.log("tx:   ", tx);
         const receipt = tx && (await tx.wait());
-        console.log(receipt);
         if (receipt) {
-          getBalances(address);
-          showSuccess("Liquidity Withdraw Successfull!");
+          console.log("receipt:  ", receipt);
           setWithdrawLoadingState(false);
+          web3Data();
+          fetchTransactionHistory(accounts[0]);
         }
       } catch (error) {
         console.log(error);
+        setWithdrawLoadingState(false);
       }
     }
   };
-  const addFunds = () => {
-    console.log(selectedFiatCurrency);
-    console.log(fundAmount);
+  const addFunds = async () => {
+    //console.log(selectedFiatCurrency);
+    // console.log(fundAmount);
+    setAddFundsLoadingState(true);
+    const res = await addFundsByAdmin({
+      currency: selectedFiatCurrency.name,
+      toAddress: address,
+      amount: EtherToWei(fundAmount.toString()),
+    });
+    //console.log("txn-response: ", res);
+    if (res) {
+      web3Data();
+      showSuccess("Funds added successfully!");
+      setAddFundsLoadingState(false);
+    }
   };
-  const withdrawFunds = () => {
-    console.log(selectedFiatCurrency);
-    console.log(fundAmount);
-  };
+  const withdrawFunds = async () => {
+    // console.log(selectedFiatCurrency);
+    // console.log(fundAmount);
 
+    setFundWithdrawLoadingState(true);
+    if (selectedFiatCurrency.name === "INR" && fundAmount > InrTokenBalance) {
+      showWarning("Not enough funds available");
+      setFundWithdrawLoadingState(false);
+      return;
+    }
+    if (selectedFiatCurrency.name === "EURO" && fundAmount > EuroTokenBalance) {
+      showWarning("Not enough funds available");
+      setFundWithdrawLoadingState(false);
+      return;
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        //console.log(accounts[0]);
+        const signer = await provider.getSigner();
+        //console.log(signer);
+        var contract;
+        if (selectedFiatCurrency.name === "EURO") {
+          contract = await initEuroContract();
+        }
+        if (selectedFiatCurrency.name === "INR") {
+          contract = await initInrContract();
+        }
+
+        const contractWithSigner = await contract.connect(signer);
+        //console.log(contractWithSigner);
+        const tx = await contractWithSigner.transfer(process.env.NEXT_PUBLIC_ADMIN_ADDRESS, EtherToWei(fundAmount.toString()));
+        //console.log("tx:   ", tx);
+        const receipt = tx && (await tx.wait());
+        //console.log(receipt);
+        if (receipt) {
+          web3Data();
+          showSuccess("Funds Withdrawn Successfully!");
+          setFundWithdrawLoadingState(false);
+        }
+      } catch (error) {
+        console.log(error);
+        setFundWithdrawLoadingState(false);
+      }
+    }
+  };
+  const fetchTransactionHistory = async (address) => {
+    if (!address) {
+      return;
+    }
+    try {
+      let inrFiat = `https://api.covalenthq.com/v1/80001/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
+      let euroFiat = `https://api.covalenthq.com/v1/80001/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
+      let inrLP = `https://api.covalenthq.com/v1/80001/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_INR_LP_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
+      let euroLP = `https://api.covalenthq.com/v1/80001/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_EURO_LP_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
+      let rapidContract = `https://api.covalenthq.com/v1/80001/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
+
+      const requestOne = axios.get(inrFiat);
+      const requestTwo = axios.get(euroFiat);
+      const requestThree = axios.get(inrLP);
+      const requestFour = axios.get(euroLP);
+      const requestFive = axios.get(rapidContract);
+      await axios
+        .all([requestOne, requestTwo, requestThree, requestFour, requestFive])
+        .then(
+          axios.spread(async (...responses) => {
+            const responseOne = responses[0];
+            const responseTwo = responses[1];
+            const responseThree = responses[2];
+            const responseFour = responses[3];
+            const responseFive = responses[4];
+            //console.log('rapid:  ',responseFive)
+            const data = [
+              ...responseOne.data.data.items,
+              ...responseTwo.data.data.items,
+              ...responseThree.data.data.items,
+              ...responseFour.data.data.items,
+              ...responseFive.data.data.items,
+            ];
+            //console.log("data:  ", data);
+            const transfers = await data.map((item) => item.transfers[0]);
+
+            transfers = transfers.filter((item) => parseInt(item.delta) > 0);
+            transfers.sort(sortFunction);
+            //console.log("transfers: ", transfers);
+            setTxnList(transfers.reverse());
+          })
+        )
+        .catch((errors) => {
+          // react on errors.
+        });
+
+      //console.log(transfers);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const fetchContractTxns = async () => {
+    const inrTransfers = [];
+    const euroTransfers = [];
+    const inrtxns = await getContractTxns(
+      process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS,
+      process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_ADDRESS,
+      process.env.NEXT_PUBLIC_COVALENT_API_KEY
+    );
+    const inrLPtxns = await getContractTxns(
+      process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS,
+      process.env.NEXT_PUBLIC_INR_LP_TOKEN_ADDRESS,
+      process.env.NEXT_PUBLIC_COVALENT_API_KEY
+    );
+    const eurotxns = await getContractTxns(
+      process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS,
+      process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS,
+      process.env.NEXT_PUBLIC_COVALENT_API_KEY
+    );
+    const euroLPtxns = await getContractTxns(
+      process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS,
+      process.env.NEXT_PUBLIC_EURO_LP_TOKEN_ADDRESS,
+      process.env.NEXT_PUBLIC_COVALENT_API_KEY
+    );
+
+    //console.log('inr-txns:  ', inrtxns);
+   //console.log('inr-LP-txns:  ', inrLPtxns);
+    
+    inrtxns.forEach((item) => { 
+      const data = inrLPtxns.find((itemlp) => itemlp.tx_hash == item.tx_hash);
+      if(!data){
+        //console.log(item)
+        inrTransfers.push(...item.transfers);
+      }
+    })
+    //console.log("inrTransfers:  ", inrTransfers);
+    if(inrTransfers.length > 0){
+      const inrVolume = inrTransfers.map((item) => parseFloat(WeiToEther(item.delta))).reduce((prev, next) => prev + next, 0);
+      //console.log('inr-volume: ', inrVolume)
+      setInrVolume(inrVolume)
+
+      const inrUtilisationArray = inrTransfers.filter((item) => item.transfer_type === 'OUT');
+      if (inrUtilisationArray && inrUtilisationArray.length > 0)
+      { 
+        const inrUtilisation = inrUtilisationArray.map((item) => parseFloat(WeiToEther(item.delta))).reduce((prev, next) => prev + next, 0);
+        setInrUtilisation(inrUtilisation);
+      }
+    }
+
+    // euro Transaction only 
+    eurotxns.forEach((item) => { 
+      const data = euroLPtxns.find((itemlp) => itemlp.tx_hash == item.tx_hash);
+      if(!data){
+        //console.log(item)
+        euroTransfers.push(...item.transfers);
+      }
+    })
+    //console.log("inrTransfers:  ", inrTransfers);
+    if(euroTransfers.length > 0){
+      const euroVolume = euroTransfers.map((item) => parseFloat(WeiToEther(item.delta))).reduce((prev, next) => prev + next, 0);
+      //console.log('inr-volume: ', inrVolume)
+      setEuroVolume(euroVolume)
+
+      const euroUtilisationArray = euroTransfers.filter((item) => item.transfer_type === 'OUT');
+      if (euroUtilisationArray && euroUtilisationArray.length > 0)
+      { 
+        const euroUtilisation = euroUtilisationArray.map((item) => parseFloat(WeiToEther(item.delta))).reduce((prev, next) => prev + next, 0);
+        setEuroUtilisation(euroUtilisation);
+      }
+    }
+  
+  };
   return (
     <section className="text-white mt-10 font-mono">
       <TxnDetail showModal={showModal} setShowModal={setShowModal} txnData={TxnData} />
       <p className="text-4xl font-bold text-center mt-10">Liquidity Dashboard</p>
       <div className="flex justify-center my-10 md:my-10 ">
-        <Table tableName={"Pool Stats"} tableHeaders={liquidityTableRows} tableData={liquidityData} />
+        <Table
+          tableName={"Pool Stats"}
+          tableHeaders={liquidityTableRows}
+          euroVolume={EuroVolume}
+          inrVolume={InrVolume}
+          EuroUtilisation={EuroUtilisation}
+          InrUtilisation={InrUtilisation}
+          fetchContractTxns={fetchContractTxns}
+        />
       </div>
       {address && <p className="text-center">Wallet Address: {address}</p>}
       <div className="flex flex-wrap justify-center items-center">
@@ -314,10 +543,22 @@ const Cards = ({ address, addLiquidityByAdmin }) => {
                 type="button"
                 className="px-5 mr-2 lg:px-12 py-2 font-bold rounded-lg bg-green-500 hover:bg-green-600 text-white"
               >
-                Add Funds
+                {!AddFundsLoadingState ? (
+                  " Add Funds"
+                ) : (
+                  <span className="flex text-white items-center justify-center">
+                    Adding Funds <Circles className="w-8 h-8 p-0 m-0 mx-5" />
+                  </span>
+                )}
               </button>
               <button onClick={withdrawFunds} type="button" className="px-5 py-2 font-bold rounded-lg bg-rose-500 hover:bg-rose-600 text-white">
-                Withdraw Funds
+                {!FundWithdrawLoadingState ? (
+                  "  Withdraw Funds"
+                ) : (
+                  <span className="flex text-white items-center justify-center">
+                    Withdrawing Funds <Circles className="w-8 h-8 p-0 m-0 mx-5" />
+                  </span>
+                )}
               </button>
             </div>
           </div>
@@ -388,14 +629,26 @@ const Cards = ({ address, addLiquidityByAdmin }) => {
                 type="button"
                 className="px-5 mr-2 lg:px-12 py-2 font-bold rounded-lg bg-green-500 hover:bg-green-600 text-white"
               >
-                {LoadingState == 0 ? "Add Liquidity" : LoadingState == 1 ? "Sending Txn..." : LoadingState == 2 && "Sending LP Tokens..."}
+                {LoadingState == 0
+                  ? "Add Liquidity"
+                  : LoadingState == 1 && (
+                      <span className="flex text-white items-center justify-center">
+                        Adding Liquidity <Circles className="w-8 h-8 p-0 m-0 mx-5" />
+                      </span>
+                    )}
               </button>
               <button
                 onClick={() => withdrawLiquidity()}
                 type="button"
                 className="px-5 py-2 font-bold rounded-lg bg-rose-500 hover:bg-rose-600 text-white"
               >
-                {WithdrawLoadingState ? "Withdrawing ...." : " Withdraw Liquidity"}
+                {WithdrawLoadingState ? (
+                  <span className="flex text-white items-center justify-center">
+                    Withdrawing Liquidity <Circles className="w-8 h-8 p-0 m-0 mx-5" />
+                  </span>
+                ) : (
+                  " Withdraw Liquidity"
+                )}
               </button>
             </div>
           </div>
@@ -407,13 +660,13 @@ const Cards = ({ address, addLiquidityByAdmin }) => {
           <div className="card-body flex flex-col justify-center items-center h-5/6 px-5">
             <div className="flex justify-between items-center w-full py-2 mt-2">
               <p>INRLP Rewards</p>
-              <p>{InrFeeRewards} INRLP</p>
+              <p>{InrFeeRewards} tINR</p>
             </div>
             <div className="flex justify-between items-center w-full py-2 mt-2">
               <p>EUROLP Rewards</p>
-              <p>{EuroFeeRewards} EUROLP</p>
+              <p>{EuroFeeRewards} tEURO</p>
             </div>
-            <div className="flex justify-between items-center w-full py-2">
+            {/* <div className="flex justify-between items-center w-full py-2">
               <p>Select Currency</p>
               <Listbox value={selectedRewardCurrency} onChange={setSelectedRewardCurrency}>
                 <div className="relative mt-1">
@@ -449,17 +702,17 @@ const Cards = ({ address, addLiquidityByAdmin }) => {
                   </Transition>
                 </div>
               </Listbox>
-            </div>
+            </div> */}
 
-            <div className="flex justify-center items-center w-full py-2 mb-2">
+            {/* <div className="flex justify-center items-center w-full py-2 mb-2">
               <button type="button" className="px-5 py-2 font-bold rounded-lg bg-rose-500 hover:bg-rose-600 text-white">
                 Withdraw REWARDS
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
-      <TxnHistory address={address} txnList={txnList} />
+      <TxnHistory address={address} txnList={TxnList} />
     </section>
   );
 };

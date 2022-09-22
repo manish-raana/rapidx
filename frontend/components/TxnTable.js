@@ -38,33 +38,39 @@ const TxnTable = ({ tableName, tableData }) => {
                 </tr>
               </thead>
               <tbody>
-                {tableData.map((item) => (
-                  <tr key={item.block_signed_at} className="bg-gray-900">
-                    <td className="px-6 py-4 text-white whitespace-nowrap">{formatDate(item.block_signed_at)}</td>
-                    <td className="px-6 py-4 text-white whitespace-nowrap">{formatTime(item.block_signed_at)}</td>
-                    <td className="px-6 py-4 text-white whitespace-nowrap">
-                      {WeiToEther(item.delta)} {item.contract_ticker_symbol}
-                    </td>
-                    <td className="px-6 py-4 text-white whitespace-nowrap">{item.transfer_type}</td>
-                    <td className="px-6 py-4 text-white whitespace-nowrap">
-                      <a
-                        className="bg-slate-700 px-5 py-2 rounde-xl text-white hover:bg-slate-800"
-                        target="_blank"
-                        href={`${process.env.NEXT_PUBLIC_MATIC_EXPLORER_TXN}${item.tx_hash}`}
-                      >
-                        Check Txn
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-
-                {/* <tr className="bg-gray-900">
-                  <td className="px-6 py-4 text-white whitespace-nowrap">06 sept 2022</td>
-                  <td className="px-6 py-4 text-white whitespace-nowrap">10:30 AM</td>
-                  <td className="px-6 py-4 text-white whitespace-nowrap">Withdraw</td>
-                  <td className="px-6 py-4 text-white whitespace-nowrap">2000</td>
-                  <td className="px-6 py-4 text-white whitespace-nowrap">0xjkjbjkajshqkjekjjnk</td>
-                </tr> */}
+                {tableData.length > 0 &&
+                  tableData.map((item, index) => (
+                    <tr key={index} className="bg-gray-900">
+                      <td className="px-6 py-4 text-white whitespace-nowrap">{formatDate(item.block_signed_at)}</td>
+                      <td className="px-6 py-4 text-white whitespace-nowrap">{formatTime(item.block_signed_at)}</td>
+                      <td className="px-6 py-4 text-white whitespace-nowrap">
+                        {WeiToEther(item.delta)} {item.contract_ticker_symbol}
+                      </td>
+                      <td className="px-6 py-4 text-white whitespace-nowrap">{item.transfer_type}</td>
+                      <td className="px-6 py-4 text-white whitespace-nowrap">
+                        <a
+                          className="bg-slate-700 px-5 py-2 rounde-xl text-white hover:bg-slate-800"
+                          target="_blank"
+                          href={`${process.env.NEXT_PUBLIC_MATIC_EXPLORER_TXN}${item.tx_hash}`}
+                        >
+                          Check Txn
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                {tableData.length == 0 && (
+                  <>
+                    <tr key="1">
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <p className="text-white py-10 text-center">No Transactions Available Yet!</p>
+                      </td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                  </>
+                )}
               </tbody>
             </table>
           </div>
