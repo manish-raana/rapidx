@@ -68,10 +68,10 @@ const Merchant = () => {
                       Time
                     </th>
                     <th key="3" scope="col" className="px-6 py-2 pt-5 text-left">
-                      Txn Type (In/OUT)
+                      Amount
                     </th>
                     <th key="4" scope="col" className="px-6 py-2 pt-5 text-left">
-                      Amount
+                      Txn Type (In/OUT)
                     </th>
                     <th key="5" scope="col" className="px-6 py-2 pt-5 text-left">
                       Txn Hash

@@ -24,6 +24,7 @@ import { showSuccess, showError, showWarning } from "../utility/notification";
 import { getContractTxns } from "../utility/txns";
 import TxnDetail from "./TxnDetail";
 import TxnHistory from "./TxnHistory";
+import FundsModal from "./fundsModal";
 const fiatCurrencyList = [
   { id: 1, name: "INR", symbol: process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_SYMBOL, lpSymbol: process.env.NEXT_PUBLIC_INR_LP_TOKEN_SYMBOL },
   { id: 2, name: "EURO", symbol: process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_SYMBOL, lpSymbol: process.env.NEXT_PUBLIC_EURO_LP_TOKEN_SYMBOL },
@@ -61,8 +62,8 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
   const [InrVolume, setInrVolume] = useState(0);
   const [InrTokenBalance, setInrTokenBalance] = useState(0);
   const [EuroTokenBalance, setEuroTokenBalance] = useState(0);
-  const [InrFeeRewards, setInrFeeRewards] = useState(0);
-  const [EuroFeeRewards, setEuroFeeRewards] = useState(0);
+  const [InrFeeRewards, setInrFeeRewards] = useState({reward:0,share:0});
+  const [EuroFeeRewards, setEuroFeeRewards] = useState({reward:0,share:0});
   const [LoadingState, setLoadingState] = useState(0);
   const [WithdrawLoadingState, setWithdrawLoadingState] = useState(false);
   const [FundWithdrawLoadingState, setFundWithdrawLoadingState] = useState(false);
@@ -70,6 +71,7 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
   const [showModal, setShowModal] = useState(false);
   const [TxnList, setTxnList] = useState([]);
   const [TxnData, setTxnData] = useState({});
+  const [IsFundsModal, setIsFundsModal] = useState(false);
 
   const sortFunction = (a, b) => {
     var dateA = new Date(a.block_signed_at).getTime();
@@ -92,12 +94,18 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
     if (euroliq > 0) {
       const euroFeeRewards = await getFeeRewards(address, process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_SYMBOL);
       console.log('euroFeeRewards: ',euroFeeRewards);
-      setEuroFeeRewards(euroFeeRewards);
+      setEuroFeeRewards({
+        reward:euroFeeRewards.reward,
+        share:euroFeeRewards.share
+      });
     }
     if (inrliq > 0) {
       const inrFeeRewards = await getFeeRewards(address, process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_SYMBOL);
       console.log('inrFeeRewards: ',inrFeeRewards);
-      setInrFeeRewards(inrFeeRewards);
+      setInrFeeRewards({
+        reward:inrFeeRewards.reward,
+        share:inrFeeRewards.share
+      });
     }
   };
   const getBalances = async (address) => {
@@ -426,6 +434,11 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
     })
     //console.log("inrTransfers:  ", inrTransfers);
     if(inrTransfers.length > 0){
+      inrTransfers = await inrTransfers.filter(
+        (item) =>
+          item["to_address"].toLowerCase() != process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS.toLowerCase() ||
+          item["from_address"].toLowerCase() != process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS.toLowerCase()
+      );
       const inrVolume = inrTransfers.map((item) => parseFloat(WeiToEther(item.delta))).reduce((prev, next) => prev + next, 0);
       //console.log('inr-volume: ', inrVolume)
       setInrVolume(inrVolume)
@@ -433,6 +446,7 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
       const inrUtilisationArray = inrTransfers.filter((item) => item.transfer_type === 'OUT');
       if (inrUtilisationArray && inrUtilisationArray.length > 0)
       { 
+       
         const inrUtilisation = inrUtilisationArray.map((item) => parseFloat(WeiToEther(item.delta))).reduce((prev, next) => prev + next, 0);
         setInrUtilisation(inrUtilisation);
       }
@@ -447,22 +461,38 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
       }
     })
     //console.log("inrTransfers:  ", inrTransfers);
-    if(euroTransfers.length > 0){
+    if (euroTransfers.length > 0)
+    {
+     
+       /* euroTransfers = await euroTransfers.filter(
+         (item) =>
+           item["to_address"] != process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS.toLowerCase()
+       ); */
+       
       const euroVolume = euroTransfers.map((item) => parseFloat(WeiToEther(item.delta))).reduce((prev, next) => prev + next, 0);
-      //console.log('inr-volume: ', inrVolume)
+      console.log("euroTransfers: ", euroTransfers);
       setEuroVolume(euroVolume)
 
       const euroUtilisationArray = euroTransfers.filter((item) => item.transfer_type === 'OUT');
       if (euroUtilisationArray && euroUtilisationArray.length > 0)
-      { 
+      {  console.log("euroUtilisationArray: ", euroUtilisationArray);
         const euroUtilisation = euroUtilisationArray.map((item) => parseFloat(WeiToEther(item.delta))).reduce((prev, next) => prev + next, 0);
         setEuroUtilisation(euroUtilisation);
+        console.log("EuroUtilisation:  ", euroUtilisation);
       }
     }
   
   };
   return (
     <section className="text-white mt-10 font-mono">
+      <FundsModal
+        IsFundsModal={IsFundsModal}
+        setIsFundsModal={setIsFundsModal}
+        fundAmount={fundAmount}
+        fundCurrency={selectedFiatCurrency}
+        addFunds={addFunds}
+        AddFundsLoadingState={AddFundsLoadingState}
+      />
       <TxnDetail showModal={showModal} setShowModal={setShowModal} txnData={TxnData} />
       <p className="text-4xl font-bold text-center mt-10">Liquidity Dashboard</p>
       <div className="flex justify-center my-10 md:my-10 ">
@@ -476,7 +506,11 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
           fetchContractTxns={fetchContractTxns}
         />
       </div>
-      {address && <p className="text-center">Wallet Address: {address}</p>}
+      {address && (
+        <div className="text-center text-xs md:text-lg">
+          <p>Wallet Address</p> <p>{address}</p>
+        </div>
+      )}
       <div className="flex flex-wrap justify-center items-center">
         {/* token fiat stats */}
         <div className="card border-2 border-gray-700 bg-gray-900 rounded-lg h-full w-full md:w-[45%] lg:w-[35%] m-2">
@@ -539,17 +573,13 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
             </div>
             <div className="flex justify-between items-center w-full py-2 mb-2">
               <button
-                onClick={addFunds}
+                onClick={() => setIsFundsModal(true)}
                 type="button"
                 className="px-5 mr-2 lg:px-12 py-2 font-bold rounded-lg bg-green-500 hover:bg-green-600 text-white"
               >
-                {!AddFundsLoadingState ? (
-                  " Add Funds"
-                ) : (
-                  <span className="flex text-white items-center justify-center">
-                    Adding Funds <Circles className="w-8 h-8 p-0 m-0 mx-5" />
-                  </span>
-                )}
+               
+                  Add Funds
+               
               </button>
               <button onClick={withdrawFunds} type="button" className="px-5 py-2 font-bold rounded-lg bg-rose-500 hover:bg-rose-600 text-white">
                 {!FundWithdrawLoadingState ? (
@@ -658,13 +688,20 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
         <div className="card border-2 border-gray-700 bg-gray-900 rounded-lg h-full w-full md:w-[71%] mt-10 mx-2">
           <div className="card-header border-b-2 border-gray-700 flex justify-center items-center py-5 font-bold">REWARD STATS</div>
           <div className="card-body flex flex-col justify-center items-center h-5/6 px-5">
+            <div className="text-orange-500 font-bold flex w-full justify-between mt-5">
+              <p></p>
+              <p className="ml-12">Fee Rewards</p>
+              <p className="mr-2">Share</p>
+            </div>
             <div className="flex justify-between items-center w-full py-2 mt-2">
               <p>INRLP Rewards</p>
-              <p>{InrFeeRewards} tINR</p>
+              <p>{InrFeeRewards.reward > 0 ? (InrFeeRewards.reward * 1).toFixed(3) : 0} tINR</p>
+              <p>{InrFeeRewards.share > 0 ? (InrFeeRewards.share * 1).toFixed(3) : 0} %</p>
             </div>
             <div className="flex justify-between items-center w-full py-2 mt-2">
               <p>EUROLP Rewards</p>
-              <p>{EuroFeeRewards} tEURO</p>
+              <p>{EuroFeeRewards.reward > 0 ? (EuroFeeRewards.reward * 1).toFixed(3) : 0} tEURO</p>
+              <p>{EuroFeeRewards.share > 0 ? (EuroFeeRewards.share * 1).toFixed(3) : 0} %</p>
             </div>
             {/* <div className="flex justify-between items-center w-full py-2">
               <p>Select Currency</p>

@@ -47,7 +47,7 @@ const Table = ({ tableName, tableHeaders, euroVolume, inrVolume,EuroUtilisation,
                   <td className="px-6 py-4 text-white whitespace-nowrap">
                     {SuppliedLiquidity.inrSuppliedLiquidity > 0
                       ? (
-                          0.02 * 365 * 100 * InrUtilisation  / SuppliedLiquidity.inrSuppliedLiquidity
+                          0.002 * 365 * 100 * InrUtilisation  / SuppliedLiquidity.inrSuppliedLiquidity
                         ).toFixed(2) + "%"
                       : "0%"}
                   </td>
@@ -65,7 +65,7 @@ const Table = ({ tableName, tableHeaders, euroVolume, inrVolume,EuroUtilisation,
                   <td className="px-6 py-4 text-white whitespace-nowrap">
                     {SuppliedLiquidity.euroSuppliedLiquidity > 0
                       ? (
-                          0.02 * 365 * 100 * EuroUtilisation  / SuppliedLiquidity.inrSuppliedLiquidity
+                          0.002 * 365 * 100 * EuroUtilisation  / SuppliedLiquidity.euroSuppliedLiquidity
                         ).toFixed(2) + "%"
                       : "0%"}
                   </td>

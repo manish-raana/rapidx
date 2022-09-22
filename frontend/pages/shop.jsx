@@ -202,15 +202,15 @@ const Shop = () => {
               <p className="text-white font-bold text-xl text-center mb-5">Price Details</p>
               <div className="flex justify-between">
                 <p>Products ( 1 item )</p>
-                <p className="mx-10">90 Euros</p>
+                <p className="mx-10">9 Euros</p>
               </div>
               <div className="flex justify-between">
                 <p>Delivery Charge</p>
-                <p className="mx-10">10 Euros</p>
+                <p className="mx-10">1 Euros</p>
               </div>
               <div className="flex justify-between">
                 <p>Amount Payable</p>
-                <p className="mx-10">100 Euros</p>
+                <p className="mx-10">10 Euros</p>
               </div>
               <div className="flex items-center justify-start">
                 <button className="px-5 py-2 rounded-lg font-bold bg-green-500 border-2 border-green-500 mx-2 mt-5 text-white hover:text-green-500 hover:bg-black">

@@ -15,7 +15,7 @@ const QrModal = ({ showQrModal, setShowQrModal, upiUrl }) => {
           <div className="w-full  justify-center items-center flex flex-col overflow-x-hidden overflow-y-auto fixed inset-0 z-[60] outline-none focus:outline-none">
             <div className="border-2 rounded-lg pt-5">
               <p className="text-white font-bold text-center text-xl mb-5">Scan and Pay</p>
-              <iframe height={600} width={400} className="" name="iframe1" src={upiUrl} title="iframe1"></iframe>
+              <iframe height={600} width={430} className="" name="iframe1" src={upiUrl} title="iframe1"></iframe>
             </div>
           </div>
           <div className="opacity-90 fixed inset-0 z-40 bg-black"></div>

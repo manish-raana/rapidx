@@ -188,7 +188,7 @@ const PayModal = ({ showModal, setShowModal, Wallet, WalletAddress, WalletBalanc
         destinationSymbol: process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_SYMBOL,
       };
       const fees = await axios.post('/api/calculateFee', txnData);
-      //console.log('fees: ',fees)
+      console.log('fees: ',fees)
       if (fees && fees.data)
       {  contractFees = fees.data.totalFees;
         cashbackReward = fees.data.cashback;
@@ -229,9 +229,14 @@ const PayModal = ({ showModal, setShowModal, Wallet, WalletAddress, WalletBalanc
     
     if (msg)
     {
-        console.log("alert:  ", msg);
+      console.log("alert:  ", msg);
+      if (msg.status === 'success')
+      { 
+        
+        handleTokenTransfer();
+      }
       setShowQrModal(false);
-      handleTokenTransfer();
+      
     }
     //
   });
@@ -278,7 +283,7 @@ const initSocket = async () => {
           <>
             <QrModal showQrModal={ShowQrModal} setShowQrModal={setShowQrModal} upiUrl={UpiUrl} />
             <div className="w-full justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
-              <div className="relative w-1/4 mx-auto">
+              <div className="relative w-[22%] mx-auto">
                 {/*content*/}
                 {IsLoadingState == 1 ? (
                   <>
@@ -312,27 +317,31 @@ const initSocket = async () => {
                       <div className="relative p-2 flex-auto text-gray-400 font-semibold text-lg">
                         <div className="flex justify-between">
                           <p>Product Price: </p>
-                          <p>90 Euros</p>
+                          <p>9 Euros</p>
                         </div>
                         <div className="flex justify-between">
                           <p>Delivery Charges: </p>
-                          <p>10 Euros </p>
+                          <p>1 Euros </p>
                         </div>
                         <div className="border-b mb-5 text-orange-500 flex justify-between">
                           <p> </p>
-                          <p>Total: 100 Euros </p>
+                          <p>Total: 10 Euros </p>
                         </div>
                         <div className="flex justify-between">
                           <p>Amount in Inr </p>
                           <p>{(ProductPrice * EuroRate).toFixed(2)} INR</p>
                         </div>
                         <div className="flex justify-between">
-                          <p>Contract Fee (0.02%)</p>
+                          <p>Contract Fee</p>
                           <p>{(TotalFees * ProductPrice * EuroRate).toFixed(2)} INR</p>
                         </div>
                         <div className="flex justify-between">
+                          <p>Cashback</p>
+                          <p>{Cashback} INR</p>
+                        </div>
+                        <div className="flex justify-between">
                           <p>Total Payable Amount</p>
-                          <p>{(ProductPrice * EuroRate + TotalFees * ProductPrice * EuroRate).toFixed(2)} INR</p>
+                          <p>{(ProductPrice * EuroRate + TotalFees * ProductPrice * EuroRate - Cashback).toFixed(2)} INR</p>
                         </div>
                         <div className="flex justify-between text-sm mt-10">
                           <p>Current Rate</p>

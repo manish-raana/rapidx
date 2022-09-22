@@ -98,7 +98,10 @@ const getFeeRewards = async (address, symbol) => {
     const contract = await initRapidContract();
   const reward = await contract.getLiquidityFeeAccruced(address, symbol);
   console.log("reward: ", reward);
-  return formatHexToEther(reward.shareEarned);
+  return {
+    reward:formatHexToEther(reward.feeEarned),
+  share:formatHexToEther(reward.shareEarned),
+};
   }catch(error){
     console.log(error)
   }
