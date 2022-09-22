@@ -3,25 +3,53 @@ import React, { useState, useEffect } from 'react'
 import { Circles } from "react-loading-icons";
 import { sequence } from "0xsequence";
 import { useRouter } from "next/router";
+
 import Link from 'next/link';
 import PayModal from '../components/PayModal';
+import io from "socket.io-client";
 
-import { getInrTokenBalance } from '../utility/web3';
-
-
+let socket;
 
 const Shop = () => {
   const [LoggedIn, setLoggedIn] = useState(false);
   const [isLoading, setisLoading] = useState(false);
   const [ShowModal, setShowModal] = useState(false);
-  const [WalletAddress, setWalletAddress] = useState('');
-  const [WalletBalance, setWalletBalance] = useState(0);
-  const [Wallet, setWallet] = useState(null);
- 
+  const [input, setInput] = useState("");
+
   const router = useRouter();
 
-  
+useEffect(() => {socketInitializer()}, []);
+
+ const socketInitializer = async () => {
+  await fetch("/api/socket");
+  socket = io();
+
+  socket.on("connect", () => {
+    console.log("connected");
+  });
+
+  socket.on("update-input", (msg) => {
+    setInput(msg);
+  });
+   socket.on("disconnect", (msg) => {
+     socket.off("connect");
+     socket.off("alert");
+   });
    
+   /* setInterval(() => {
+     //console.log("connected");
+     socket.emit("input-change", count);
+     count = count + 1;
+   }, 2000); */
+   /* return () => {
+     socket.off("connect");
+     socket.off("alert");
+   }; */
+ };
+   const onChangeHandler = (e) => {
+     setInput(e.target.value);
+     socket.emit("input-change", e.target.value);
+   };
   const handleLogin = async () => { 
     setisLoading(true);
     try {
@@ -59,58 +87,28 @@ const Shop = () => {
       query: { hash: hash },
     });
   }
-  const getTokenBalance = async (walletAddress) => {
-    try {
-      const inrTokenBalance = await getInrTokenBalance(walletAddress);
-      setWalletBalance(inrTokenBalance);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  const getWallet = async () => {
+  const getWallet = async () => { 
     try
     {
       await sequence.initWallet("mumbai");
       const wallet = sequence.getWallet();
-      setWallet(wallet)
       const walletAddress = await wallet.getAddress();
-      //console.log('address: ', walletAddress);
+     
+      console.log(walletAddress);
       if (walletAddress)
-      {
-      
+      { 
         setLoggedIn(true);
-        setWalletAddress(walletAddress);
-        getTokenBalance(walletAddress);
       }
-    } catch (error)
-    {
+    } catch (error) {
       console.log(error);
     }
-  }
-  const openWallet = () => { 
-    if (Wallet)
-    { 
-     try {
-       Wallet.openWallet();
-     } catch (error) {
-      console.log(error)
-     }
-    }
-  }
+  } 
   useEffect(() => {
-   console.log('init shop comp')
-   getWallet()
+   //getWallet()
   }, []);
   return (
     <div className="h-full w-full py-5">
-      <PayModal
-        showModal={ShowModal}
-        setShowModal={setShowModal}
-        Wallet={Wallet}
-        WalletAddress={WalletAddress}
-        WalletBalance={WalletBalance}
-        getTokenBalance={getTokenBalance}
-      />
+      <PayModal showModal={ShowModal} setShowModal={setShowModal} />
 
       <header className="flex justify-between border-gray-700 backdrop-blur-0 items-center border-b px-10 py-2">
         <div className="text-center cursor-pointer">
@@ -119,45 +117,25 @@ const Shop = () => {
           </span>
         </div>
         {!LoggedIn ? (
-          <div>
-            <button
-              className="flex px-5 py-2 rounded md:rounded-lg bg-green-500 hover:bg-green-600 font-bold text-slate-900"
-              onClick={() => handleLogin()}
-            >
-              {!isLoading ? (
-                "LOGIN"
-              ) : (
-                <span className="flex text-white items-center justify-center">
-                  Connecting <Circles className="w-8 h-8 p-0 m-0 mx-5" />
-                </span>
-              )}
-            </button>
-          </div>
+          <button
+            className="flex px-5 py-2 rounded md:rounded-lg bg-green-500 hover:bg-green-600 font-bold text-slate-900"
+            onClick={() => handleLogin()}
+          >
+            {!isLoading ? (
+              "LOGIN"
+            ) : (
+              <span className="flex text-white items-center justify-center">
+                Connecting <Circles className="w-8 h-8 p-0 m-0 mx-5" />
+              </span>
+            )}
+          </button>
         ) : (
-          <div className="flex items-end">
-            <button
-              onClick={() => openWallet()}
-              className="mx-5 px-5 py-2 bg-orange-500 rounded-lg text-black hover:bg-orange-700 hover:text-white font-bold"
-            >
-              Open Wallet
-            </button>
-            <button
-              className="px-5 py-2 rounded-lg bg-rose-500 hover:text-white hover:bg-rose-600 font-bold text-slate-900"
-              onClick={() => handleSignOut()}
-            >
-              LOGOUT
-            </button>
-          </div>
+          <button className="px-5 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 font-bold text-slate-900" onClick={() => handleSignOut()}>
+            LOGOUT
+          </button>
         )}
       </header>
       <div className="h-[25%] py-10 rounded-lg px-20">
-        {LoggedIn && (
-          <div className="text-white text-center font-bold">
-            <p>Wallet Address : {WalletAddress}</p>
-            <p>Balance: {WalletBalance} tINR</p>
-          </div>
-        )}
-
         <div className="w-full md:flex justify-evenly">
           <div className="w-full py-20 ">
             <div className="flex items-center">
@@ -176,8 +154,8 @@ const Shop = () => {
                 </button>
                 <input
                   type="text"
-                  readOnly
-                  value={1}
+                  value={input}
+                  onChange={onChangeHandler}
                   className="w-[20%] text-center font-bold bg-gray-900 text-white p-1 focus-visible:none outline-none"
                 />
                 <button className="px-1 py-1 text-white bg-gray-900">

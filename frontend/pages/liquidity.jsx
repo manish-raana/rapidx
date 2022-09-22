@@ -89,11 +89,20 @@ const Home = ({ user }) => {
     console.log("res: ", response);
     return response;
   };
+  const addFunds = async (data) => {
+    const response = await axios.post("/api/addFunds", data, {
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+    console.log("res: ", response);
+    return response;
+  };
   return (
     <div className="w-full">
       <Header isLoading={IsLoading} LoggedIn={LoggedIn} handleAuth={handleAuth} handleSignOut={handleSignOut} />
 
-      <Cards address={Address} addLiquidityByAdmin={addLiquidity} />
+      <Cards address={Address} addLiquidityByAdmin={addLiquidity} addFundsByAdmin={addFunds} />
     </div>
   );
 };

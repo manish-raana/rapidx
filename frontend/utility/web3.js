@@ -10,13 +10,26 @@ const provider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RP
 
 //console.log(LPTokens.abi);
 const formatHexToEther = (balance) => {
-  return ethers.utils.formatEther(balance);
+  try {
+     return ethers.utils.formatEther(balance);
+  } catch (error) {
+    console.log(error)
+  }
+ 
 };
 const EtherToWei = (balance) => {
-  return ethers.utils.parseEther(balance);
+  try {
+    return ethers.utils.parseEther(balance);
+  } catch (error) {
+    console.log(error)
+  }
 };
 const WeiToEther = (balance) => {
-  return parseInt(ethers.utils.formatUnits(balance, 18));
+  try {
+    return parseFloat(ethers.utils.formatUnits(balance, 18));
+  } catch (error) {
+    console.log(error);
+  }
 };
 /* const data = async () => {
   const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com/");
@@ -26,16 +39,44 @@ const WeiToEther = (balance) => {
 }; */
 
 const initRapidContract = async () => {
-  const contract = await new ethers.Contract(process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS, RapidAbi, provider);
-  return contract;
+ try {
+   const contract = await new ethers.Contract(process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS, RapidAbi, provider);
+   return contract;
+ } catch (error) {
+  console.log(error)
+ }
 };
 const initInrContract = async () => {
-  const contract = await new ethers.Contract(process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_ADDRESS, TokenisedAbi, provider);
-  return contract;
+  try {
+    const contract = await new ethers.Contract(process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_ADDRESS, TokenisedAbi, provider);
+    return contract;
+  } catch (error) {
+    console.log(error);
+  }
 };
 const initEuroContract = async () => {
-  const contract = await new ethers.Contract(process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS, TokenisedAbi, provider);
-  return contract;
+  try {
+    const contract = await new ethers.Contract(process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS, TokenisedAbi, provider);
+    return contract;
+  } catch (error) {
+    console.log(error);
+  }
+};
+const initInrLPContract = async () => {
+  try {
+    const contract = await new ethers.Contract(process.env.NEXT_PUBLIC_INR_LP_TOKEN_ADDRESS, TokenisedAbi, provider);
+    return contract;
+  } catch (error) {
+    console.log(error);
+  }
+};
+const initEuroLPContract = async () => {
+  try {
+    const contract = await new ethers.Contract(process.env.NEXT_PUBLIC_EURO_LP_TOKEN_ADDRESS, TokenisedAbi, provider);
+    return contract;
+  } catch (error) {
+    console.log(error);
+  }
 };
 const getLiquidity = async (address, symbol) => {
   const contract = await initRapidContract();
@@ -53,11 +94,46 @@ const getEuroTokenBalance = async (address) => {
   return formatHexToEther(balance);
 };
 const getFeeRewards = async (address, symbol) => {
-  const contract = await initRapidContract();
+  try{
+    const contract = await initRapidContract();
   const reward = await contract.getLiquidityFeeAccruced(address, symbol);
-  return formatHexToEther(reward);
+  console.log("reward: ", reward);
+  return formatHexToEther(reward.shareEarned);
+  }catch(error){
+    console.log(error)
+  }
 };
+const suppliedLiquidity = async () => {
+  const contract = await initRapidContract();
+  const inrLiqAmount = await contract.getSuppliedLiquidity(process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_SYMBOL);
+  const euroLiqAmount = await contract.getSuppliedLiquidity(process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_SYMBOL);
+  return {
+    inrSuppliedLiquidity: parseFloat(formatHexToEther(inrLiqAmount)).toFixed(2),
+    euroSuppliedLiquidity: parseFloat(formatHexToEther(euroLiqAmount)).toFixed(2),
+  };
+};
+const currentLiquidity = async () => {
+  const inrContract = await initInrContract();
+  const euroContract = await initEuroContract();
 
+  const inrCurrentLiquidity = await inrContract.balanceOf(process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS);
+  const euroCurrentLiquidity = await euroContract.balanceOf(process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS);
+
+  return {
+    inrCurrentLiquidity: parseFloat(formatHexToEther(inrCurrentLiquidity)).toFixed(2),
+    euroCurrentLiquidity: parseFloat(formatHexToEther(euroCurrentLiquidity)).toFixed(2),
+  };
+};
+const calculateFeeAndCashback = async (sourceAmount, sourceSymbol, destinationAmount, destinationSymbol) => {
+  try {
+    const rapidContract = await initRapidContract();
+    const cashback = await rapidContract.calculateFeeAndCashback(sourceAmount, sourceSymbol, destinationAmount, destinationSymbol);
+    return cashback
+  } catch (error)
+  {
+    return error;
+  }
+}
 module.exports = {
   initRapidContract: initRapidContract,
   getLiquidity: getLiquidity,
@@ -70,4 +146,9 @@ module.exports = {
   initRapidContract: initRapidContract,
   initInrContract: initInrContract,
   initEuroContract: initEuroContract,
+  initInrLPContract: initInrLPContract,
+  initEuroLPContract: initEuroLPContract,
+  suppliedLiquidity: suppliedLiquidity,
+  currentLiquidity: currentLiquidity,
+  calculateFeeAndCashback: calculateFeeAndCashback,
 };
