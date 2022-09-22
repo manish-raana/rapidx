@@ -25,12 +25,12 @@ Buyer Currency: INR
 
 ## steps to provide Liquidity:
 
--LP user can login at https://rapidx.live/liquidity
--Moralis is used for user authentication
--LP dashboard is shown with LP positions, fees earned and shares.
--LP dashboard also shows APR and utilization
--User can Add funds (FIAT). Currently dummy transaction for security purpose.
--User can add /withdraw liquidity
+- LP user can login at https://rapidx.live/liquidity
+- Moralis is used for user authentication
+- LP dashboard is shown with LP positions, fees earned and shares.
+- LP dashboard also shows APR and utilization
+- User can Add funds (FIAT). Currently dummy transaction for security purpose.
+- User can add /withdraw liquidity
 
 
 ## Steps for Merchant:
