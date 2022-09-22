@@ -24,7 +24,7 @@ import { showSuccess, showError, showWarning } from "../utility/notification";
 import { getContractTxns } from "../utility/txns";
 import TxnDetail from "./TxnDetail";
 import TxnHistory from "./TxnHistory";
-import FundsModal from "./fundsModal";
+import FundsModal from "./FundsModal";
 const fiatCurrencyList = [
   { id: 1, name: "INR", symbol: process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_SYMBOL, lpSymbol: process.env.NEXT_PUBLIC_INR_LP_TOKEN_SYMBOL },
   { id: 2, name: "EURO", symbol: process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_SYMBOL, lpSymbol: process.env.NEXT_PUBLIC_EURO_LP_TOKEN_SYMBOL },
@@ -577,9 +577,7 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
                 type="button"
                 className="px-5 mr-2 lg:px-12 py-2 font-bold rounded-lg bg-green-500 hover:bg-green-600 text-white"
               >
-               
-                  Add Funds
-               
+                Add Funds
               </button>
               <button onClick={withdrawFunds} type="button" className="px-5 py-2 font-bold rounded-lg bg-rose-500 hover:bg-rose-600 text-white">
                 {!FundWithdrawLoadingState ? (
@@ -695,13 +693,13 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
             </div>
             <div className="flex justify-between items-center w-full py-2 mt-2">
               <p>INRLP Rewards</p>
-              <p>{InrFeeRewards.reward > 0 ? (InrFeeRewards.reward * 1).toFixed(3) : 0} tINR</p>
-              <p>{InrFeeRewards.share > 0 ? (InrFeeRewards.share * 1).toFixed(3) : 0} %</p>
+              <p>{ (InrFeeRewards.reward * 1).toPrecision(3)}  tINR</p>
+              <p>{(InrFeeRewards.share * 100).toPrecision(3)}  %</p>
             </div>
             <div className="flex justify-between items-center w-full py-2 mt-2">
               <p>EUROLP Rewards</p>
-              <p>{EuroFeeRewards.reward > 0 ? (EuroFeeRewards.reward * 1).toFixed(3) : 0} tEURO</p>
-              <p>{EuroFeeRewards.share > 0 ? (EuroFeeRewards.share * 1).toFixed(3) : 0} %</p>
+              <p>{ (EuroFeeRewards.reward * 1).toPrecision(3)}  tEURO</p>
+              <p>{(EuroFeeRewards.share * 100).toPrecision(3)}  %</p>
             </div>
             {/* <div className="flex justify-between items-center w-full py-2">
               <p>Select Currency</p>

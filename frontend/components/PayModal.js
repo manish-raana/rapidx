@@ -44,10 +44,11 @@ const PayModal = ({ showModal, setShowModal, Wallet, WalletAddress, WalletBalanc
   };
   const handleUpiPayment = async () => {
     setIsLoadingState(4);
+    const amount = ProductPrice * euroToInrRate + contractFees * ProductPrice * euroToInrRate;
     console.log('Paying with upi....');
     const data = {
-      address: "0x67F4d010f05311B690074A55BCc2F1820D27e691",
-      amount: "1",
+      address: process.env.NEXT_PUBLIC_SELLER_ADDRESS,
+      amount: amount,
     };
     const response = await axios.post("/api/payment", data, {
       headers: {
@@ -73,7 +74,7 @@ const PayModal = ({ showModal, setShowModal, Wallet, WalletAddress, WalletBalanc
       const amount = ProductPrice * EuroRate + TotalFees * ProductPrice * EuroRate;
       //const amount = 100;
       const txnData = {
-        sellerAddress: "0x52de076F23D29A7eA99D30AB8E99Af12A067feDC",
+        sellerAddress: process.env.NEXT_PUBLIC_SELLER_ADDRESS,
         destinationAmount: EtherToWei(ProductPrice.toString()),
         destinationFiatSymbol: process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_SYMBOL,
         sourceAmount: EtherToWei(amount.toString()),
@@ -97,7 +98,7 @@ const PayModal = ({ showModal, setShowModal, Wallet, WalletAddress, WalletBalanc
       console.log('sending token transactions...')
       setIsLoadingState(2);
        //const amount = ProductPrice * EuroRate + TotalFees * ProductPrice * EuroRate;
-       const amount = ProductPrice * euroToInrRate + contractFees * ProductPrice * euroToInrRate; ;
+       const amount = ProductPrice * euroToInrRate + contractFees * ProductPrice * euroToInrRate;
        //const amount = ProductPrice * EuroRate + TotalFees * ProductPrice * EuroRate;
       //const amount = 100;
         //console.log("ProductPrice:  ", ProductPrice);

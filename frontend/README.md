@@ -1,10 +1,13 @@
-# Next.js + Tailwind CSS Example
+# RapidX - Revolutionising The Cross Border Payments With Web3.0
 
-This example shows how to use [Tailwind CSS](https://tailwindcss.com/) [(v3.0)](https://tailwindcss.com/blog/tailwindcss-v3) with Next.js. It follows the steps outlined in the official [Tailwind docs](https://tailwindcss.com/docs/guides/nextjs).
+This folder contains all the files for front-end and back-end that is being used.
 
-## Deploy your own
+## TechStack Used
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example) or preview live with [StackBlitz](https://stackblitz.com/github/vercel/next.js/tree/canary/examples/with-tailwindcss)
+Next.js
+Tailwind.css
+Moralis - For User Wallet Authentication
+Covalenthq - To fetch the transaction history of user transfers and ERC20 Transactions
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-tailwindcss&project-name=with-tailwindcss&repository-name=with-tailwindcss)
 
@@ -15,13 +18,17 @@ Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packag
 ```bash
 npx create-next-app --example with-tailwindcss with-tailwindcss-app
 ```
+To run this project in local, just clone this repository and run the following commands:
 
 ```bash
-yarn create next-app --example with-tailwindcss with-tailwindcss-app
+npm install
 ```
+set all the environment variables and run the below command:
 
 ```bash
-pnpm create next-app --example with-tailwindcss with-tailwindcss-app
+npx run dev
 ```
 
-Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
+
+
+** Note: Upi transaction will only work with our server as webhook api is required by UPI provider.

@@ -1,14 +1,14 @@
 var axios = require("axios");
 
-const createPayment = async (userWallet,amount) => {
+const createPayment = async (userWallet, amount) => {
   const date = await Date.now();
   var data = JSON.stringify({
-    key: "b8bb2fee-aae3-4bd0-ba01-07b5876554ab",
+    key:  process.env.UPI_KEY,
     client_txn_id: date.toString(),
-    amount: amount,
+    amount: amount.toFixed(2),
     p_info: "RapidX",
     customer_name: "Paypal",
-    customer_email: "mkrana173@gmail.com",
+    customer_email: "email@email.com",
     customer_mobile: "1234567890",
     redirect_url: "https://rapidx.live/shop",
     udf1: userWallet,
@@ -28,7 +28,8 @@ const createPayment = async (userWallet,amount) => {
     var response = await axios(config);
     var res = await response.data;
     return res;
-  } catch (error) {
+  } catch (error)
+  {
     return error;
   }
 };
