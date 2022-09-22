@@ -3,9 +3,9 @@
 This repository contains two folders for smart contract and frontend
 
 ## TechStack for smart contracts
-
-
-
+ChainLink - For realtime price feed
+ERC20 standard smart contracts
+OpenZeppelin
 
 ## TechStack Used For UI and Backend
 
