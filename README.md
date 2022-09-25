@@ -58,7 +58,7 @@ Buyer Currency: INR
 
 ## Sponsors used:
 
-- Ethereum Push Notification Service (EPNS):
+### - Ethereum Push Notification Service (EPNS):
     a. Create A Channel for polygon-mumbai : PaymentConfirmationPM
     
     b. Developed the smart contract (Notifications.sol) to call the sendNotification function using IPUSHCommInterface for the below address.
@@ -75,7 +75,7 @@ Buyer Currency: INR
     e. Seller can also send offers to their buyers by sending a notification from our frontend on merchant page and buyer on shop page receives those   notifications in real time
     
     
-- Web3.Storage for saving images for EPNS notifications.
+### - Web3.Storage for saving images for EPNS notifications.
    
     a. Installed web3.storage sdk and initialised in AddOfferModal component
     
@@ -83,7 +83,7 @@ Buyer Currency: INR
     
     c. On shop page file url is extracted from EPNS notification and displayed
     
-- Worldcoin - Merchant Identity verification for fraud detection
+### - Worldcoin - Merchant Identity verification for fraud detection
    
     a. Added worldcoin js sdk in worldcoin component
     
