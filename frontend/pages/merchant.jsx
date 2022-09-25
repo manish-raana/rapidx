@@ -1,168 +1,286 @@
-import React from 'react'
-import { getEuroTokenBalance,WeiToEther,initEuroContract,EtherToWei } from "../utility/web3";
-import { useEffect,useState } from 'react';
-import axios from 'axios';
+import React from "react";
+import Link from "next/link";
+import Moment from "moment";
+import axios from "axios";
 import { useAccount, useConnect, useSignMessage, useDisconnect } from "wagmi";
 import { MetaMaskConnector } from "wagmi/connectors/metaMask";
 import { signIn, getSession, signOut } from "next-auth/react";
-import Moment from "moment";
-import { ethers } from "ethers";
-import Link from 'next/link';
 import { Circles } from "react-loading-icons";
-import ProfileModal from '../components/ProfileModal'
-import BankModal from '../components/BankModal'
-import { showError, showSuccess, showWarning } from '../utility/notification'
+import { useEffect, useState } from "react";
+import { ethers } from "ethers";
 
-const Merchant = ({user}) => {
+import { subscribe, unSubscribe, fetchNotifs, sendNotifs, checkSubscription } from "../utility/epns";
+import { getEuroTokenBalance, WeiToEther, initEuroContract, EtherToWei } from "../utility/web3";
+import { showError, showSuccess, showWarning } from "../utility/notification";
+import EnpsNotification from "../components/EnpsNotification";
+import ProfileModal from "../components/ProfileModal";
+import BankModal from "../components/BankModal";
+import AddOfferModal from '../components/AddOfferModal';
+import Worldcoin from '../components/Worldcoin';
+let notifcationCount = 0;
 
-    const [Balance, setBalance] = useState(0);
-  const [TxnList, setTxnList] = useState([])
+const Merchant = ({ user }) => {
+  const { connectAsync } = useConnect();
+   const { disconnectAsync } = useDisconnect();
+   const { isConnected } = useAccount();
+  const { signMessageAsync } = useSignMessage();
+
+  const [Balance, setBalance] = useState(0);
+  const [TxnList, setTxnList] = useState([]);
   const [Address, setAddress] = useState("");
-    const [IsProfileModal, setIsProfileModal] = useState(false);
-    const [IsBankModal, setIsBankModal] = useState(false);
-    const [FundWithdrawLoadingState, setFundWithdrawLoadingState] = useState(false);
+  const [IsProfileModal, setIsProfileModal] = useState(false);
+  const [IsBankModal, setIsBankModal] = useState(false);
+  const [IsSubscribed, setIsSubscribed] = useState(false);
+  const [FundWithdrawLoadingState, setFundWithdrawLoadingState] = useState(false);
   const [TransactionHash, setTransactionHash] = useState(undefined);
- 
-   
-    const [LoggedIn, setLoggedIn] = useState(user ? true : false);
-    const [IsLoading, setIsLoading] = useState(false);
-    const getTransactions = async (address) => { 
-       const url = `${process.env.NEXT_PUBLIC_COVALENT_BASE_URL}/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
-        const response = await axios.get(url);
-        if (response && response.data && response.data.data)
-        { 
-            const txnObject = response.data.data.items;
-            const txnList = [];
-            await txnObject.forEach(item => { 
-                txnList.push(...item.transfers);
-            });
-            if (txnList.length > TxnList.length)
-            {
-                setTxnList(txnList);
-            }
-        }
-        console.log(response)
+  const [notifications, setnotifications] = useState([]);
+  const [ShowNotifications, setShowNotifications] = useState(false);
+
+  const [LoggedIn, setLoggedIn] = useState(user ? true : false);
+  const [IsLoading, setIsLoading] = useState(false);
+  const [ShowAddOffers, setShowAddOffers] = useState(false);
+  const [IsSending, setIsSending] = useState(false);
+
+  const getTransactions = async (address) => {
+    const url = `/api/contractTransactions?walletAddress=${address}&contractAddress=${process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS}`;
+    const response = await axios.get(url);
+    //console.log(response)
+    if (response && response.data) {
+      const txnObject = response.data.items;
+      const txnList = [];
+      await txnObject.forEach((item) => {
+        txnList.push(...item.transfers);
+      });
+      if (txnList.length > TxnList.length) {
+        setTxnList(txnList);
+      } 
     }
-    const fetchBalance = async(address) => { 
-        const balance = await getEuroTokenBalance(address);
-        //console.log(balance)
-        if(balance !== Balance){
-            setBalance(balance)
-        }
+   // console.log(response);
+  };
+  const fetchBalance = async (address) => {
+    const balance = await getEuroTokenBalance(address);
+    //console.log(balance)
+    if (balance !== Balance) {
+      setBalance(balance);
     }
-    const formatDate = (date) => {
-      return Moment(date).format("DD-MM-YYYY");
-    };
-    const formatTime = (date) => {
-      return Moment(date).format("hh:mm:ss A");
-    };
-  
+  };
+  const formatDate = (date) => {
+    return Moment(date).format("DD-MM-YYYY");
+  };
+  const formatTime = (date) => {
+    return Moment(date).format("hh:mm:ss A");
+  };
+
   const handleWithdraw = async (amount) => {
     //console.log(amount)
     //console.log(Balance)
-    if (parseFloat(amount) > parseFloat(Balance))
-    { 
-      showWarning('Low Balance, Please select a lower amount!')
+    if (parseFloat(amount) > parseFloat(Balance)) {
+      showWarning("Low Balance, Please select a lower amount!");
       return;
     }
     if (typeof window !== "undefined") {
-      try
-      {
+      try {
         setFundWithdrawLoadingState(true);
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const accounts = await provider.send("eth_requestAccounts", []);
-        console.log('accounts: ',accounts[0]);
+       // console.log("accounts: ", accounts[0]);
         //setAddress(accounts[0]);
         const signer = await provider.getSigner();
-        console.log('signer: ',signer);
+       // console.log("signer: ", signer);
         var contract = await initEuroContract();
-      
+
         const contractWithSigner = await contract.connect(signer);
-        console.log('contractWithSigner:  ',contractWithSigner);
+        //console.log("contractWithSigner:  ", contractWithSigner);
         const tx = await contractWithSigner.transfer(process.env.NEXT_PUBLIC_ADMIN_ADDRESS, EtherToWei(amount));
-        console.log("tx:   ", tx);
+        //console.log("tx:   ", tx);
         const receipt = tx && (await tx.wait());
-        console.log(receipt);
+       // console.log(receipt);
         if (receipt) {
-          setTransactionHash(receipt.transactionHash)
+          setTransactionHash(receipt.transactionHash);
           showSuccess("Transaction Successfull!");
           setFundWithdrawLoadingState(false);
         }
       } catch (error) {
         console.log(error);
-        showError('Error Occured!');
+        showError("Error Occured!");
         setFundWithdrawLoadingState(false);
       }
     }
   };
-  const { connectAsync } = useConnect();
-  const { disconnectAsync } = useDisconnect();
-  const { isConnected } = useAccount();
-  const { signMessageAsync } = useSignMessage();
-const handleAuth = async () => {
-  setIsLoading(true);
-  try {
-    if (isConnected) {
-      await disconnectAsync();
+
+  const handleAuth = async () => {
+    setIsLoading(true);
+    try {
+      if (isConnected) {
+        await disconnectAsync();
+      }
+
+      const { account, chain } = await connectAsync({ connector: new MetaMaskConnector() });
+
+      const userData = { address: account, chain: chain.id, network: "evm" };
+
+      const { data } = await axios.post("/api/auth/request-message", userData, {
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+
+      const message = data.message;
+
+      const signature = await signMessageAsync({ message });
+
+      // redirect user after success authentication to '/user' page
+      const { url } = await signIn("credentials", { message, signature, redirect: false, callbackUrl: "/user" });
+      if (url) {
+        setAddress(userData.address);
+        fetchBalance(userData.address);
+        getTransactions(userData.address);
+        showSuccess("Authentication Successfull");
+        setLoggedIn(true);
+      }
+      //console.log(url);
+
+      /**
+       * instead of using signIn(..., redirect: "/user")
+       * we get the url from callback and push it to the router to avoid page refreshing
+       */
+      //push(url);
+      setIsLoading(false);
+    } catch (error) {
+      //console.log("error: ", error);
+      showError(`Authentication Failed!`);
+      setIsLoading(false);
     }
+  };
+  const handleSignOut = () => {
+    setLoggedIn(false);
+    signOut({ redirect: "/merchant" });
+  };
 
-    const { account, chain } = await connectAsync({ connector: new MetaMaskConnector() });
-
-    const userData = { address: account, chain: chain.id, network: "evm" };
-
-    const { data } = await axios.post("/api/auth/request-message", userData, {
-      headers: {
-        "content-type": "application/json",
-      },
-    });
-
-    const message = data.message;
-
-    const signature = await signMessageAsync({ message });
-
-    // redirect user after success authentication to '/user' page
-    const { url } = await signIn("credentials", { message, signature, redirect: false, callbackUrl: "/user" });
-    if (url) {
-      setAddress(userData.address);
-      fetchBalance(userData.address);
-      getTransactions(userData.address);
-      showSuccess("Authentication Successfull");
-      setLoggedIn(true);
+  const checkSubscriptionStatus = async (address) => {
+    try {
+      const status = await checkSubscription(process.env.NEXT_PUBLIC_EPNS_CHANNEL_ADDRESS, address);
+      setIsSubscribed(status);
+    } catch (error) {
+      console.log(error);
     }
-    //console.log(url);
-
-    /**
-     * instead of using signIn(..., redirect: "/user")
-     * we get the url from callback and push it to the router to avoid page refreshing
-     */
-    //push(url);
-    setIsLoading(false);
-  } catch (error) {
-    //console.log("error: ", error);
-    showError(`Authentication Failed!`);
-    setIsLoading(false);
+  };
+  const handleSendNotification = async (title, description, fileUrl) => { 
+    if (typeof window !== "undefined")
+    {
+      try
+      {
+         const provider = new ethers.providers.Web3Provider(window.ethereum);
+         // Prompt user for account connections
+         await provider.send("eth_requestAccounts", []);
+         const _signer = provider.getSigner();
+        setIsSending(true)
+        const result = await sendNotifs(
+          title,
+          description,
+          fileUrl,
+          process.env.NEXT_PUBLIC_PAYPAL_USER_ADDRESS,
+          process.env.NEXT_PUBLIC_EPNS_OFFERS_CHANNEL_ADDRESS,
+          _signer
+        );
+       console.log(result)
+        setShowAddOffers(false);
+        setIsSending(false);
+      } catch (error)
+      {
+        console.log(error)
+        setIsSending(false)
+      }
+    }
   }
-};
-const handleSignOut = () => {
-  setLoggedIn(false);
-  signOut({ redirect: "/liquidity" });
-};
+  const handleSubscribe = async () => {
+    if (typeof window !== "undefined") {
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        // Prompt user for account connections
+        await provider.send("eth_requestAccounts", []);
+        const _signer = provider.getSigner();
+        //console.log("Account:", await signer.getAddress());
+        const address = await _signer.getAddress();
+        const status = await subscribe(process.env.NEXT_PUBLIC_EPNS_CHANNEL_ADDRESS, address, _signer);
+        if (status) {
+          setIsSubscribed(!IsSubscribed);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+  const handleUnsubscribe = async () => {
+    if (typeof window !== "undefined") {
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        // Prompt user for account connections
+        await provider.send("eth_requestAccounts", []);
+        const _signer = provider.getSigner();
+        //console.log("Account:", await signer.getAddress());
+        const address = await _signer.getAddress();
+        const status = await unSubscribe(process.env.NEXT_PUBLIC_EPNS_CHANNEL_ADDRESS, address, _signer);
+        if (status) {
+          setIsSubscribed(!IsSubscribed);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+  const getNotifications = async (address) => {
+    try {
+      const notifs = await fetchNotifs(address);
+      if (notifs) {
+        //notifcationEvents.push(...notifs);
+        //console.log("notifcationCount:  ", notifcationCount);
+       // console.log("notifs-length:  ", notifs.length);
+        if (notifcationCount > 0 && notifs.length > notifcationCount) {
+          setShowNotifications(true);
+        }
+        notifcationCount = notifs.length;
+        setnotifications(notifs);
+      }
+    } catch (error) {
+      console.log("error:  ", error);
+    }
+  };
   useEffect(() => {
     if (user) {
-      //console.log(user);
+      const address = user.user.address;
+      checkSubscriptionStatus(address);
+      getNotifications(address);
+      fetchBalance(address);
+      getTransactions(address);
+      setLoggedIn(true);
+      setAddress(address);
       setInterval(() => {
-         fetchBalance(user.user.address);
-         getTransactions(user.user.address);
-         setLoggedIn(true);
-        setAddress(user.user.address);
-       
-      }, 3000);
+        getNotifications(address);
+        fetchBalance(address);
+        getTransactions(address);
+      }, 5000);
     }
   }, [user]);
 
   return (
     <>
-      <ProfileModal IsProfileModal={IsProfileModal} setIsProfileModal={setIsProfileModal} handleSignOut={handleSignOut} />
+      <EnpsNotification ShowNotifications={ShowNotifications} setShowNotifications={setShowNotifications} notifications={notifications} />
+      <AddOfferModal
+        ShowAddOffers={ShowAddOffers}
+        setShowAddOffers={setShowAddOffers}
+        IsSending={IsSending}
+        setIsSending={setIsSending}
+        handleSendNotification={handleSendNotification}
+      />
+      <ProfileModal
+        IsProfileModal={IsProfileModal}
+        setIsProfileModal={setIsProfileModal}
+        handleSignOut={handleSignOut}
+        isNotifications={IsSubscribed}
+        handleSubscribe={handleSubscribe}
+        handleUnsubscribe={handleUnsubscribe}
+      />
       <BankModal
         IsBankModal={IsBankModal}
         setIsBankModal={setIsBankModal}
@@ -179,6 +297,7 @@ const handleSignOut = () => {
         </div>
 
         <div className="text-white flex cursor-pointer">
+          <Worldcoin userAddress={ Address }></Worldcoin>
           {!LoggedIn ? (
             <button
               className="flex px-5 py-2 rounded md:rounded-lg bg-green-500 hover:bg-green-600 font-bold text-slate-900"
@@ -194,6 +313,22 @@ const handleSignOut = () => {
             </button>
           ) : (
             <div className="flex items-center">
+              {IsSubscribed ? (
+                <button
+                  className="mr-5 px-2.5 py-2 rounded-full bg-green-500 hover:bg-gray-800 font-bold text-slate-900"
+                  onClick={() => setShowNotifications(true)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.124 7.5A8.969 8.969 0 015.292 3m13.416 0a8.969 8.969 0 012.168 4.5"
+                    />
+                  </svg>
+                </button>
+              ) : (
+                <></>
+              )}
               <svg
                 onClick={() => setIsProfileModal(true)}
                 xmlns="http://www.w3.org/2000/svg"
@@ -201,7 +336,7 @@ const handleSignOut = () => {
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-8 h-8"
+                className="w-10 h-10"
               >
                 <path
                   strokeLinecap="round"
@@ -209,6 +344,7 @@ const handleSignOut = () => {
                   d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
+
               <button className="ml-5 px-5 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 font-bold text-slate-900" onClick={() => handleSignOut()}>
                 LOGOUT
               </button>
@@ -225,9 +361,12 @@ const handleSignOut = () => {
                 <p>Balance: {Balance} tEURO</p>
               </div>
             </div>
-            <div className="mt-5">
-              <button onClick={() => setIsBankModal(true)} className="bg-orange-500 text-white rounded-lg px-10 py-2">
+            <div className="mt-5 flex ">
+              <button onClick={() => setIsBankModal(true)} className="bg-orange-500 hover:bg-orange-700 text-white rounded-lg px-10 py-2">
                 Withdraw Funds
+              </button>
+              <button onClick={() => setShowAddOffers(true)} className="bg-purple-500 hover:bg-purple-700 text-white rounded-lg px-10 py-2 ml-5">
+                Add Offers
               </button>
             </div>
           </div>
@@ -313,4 +452,4 @@ export async function getServerSideProps(context) {
     props: { user: session },
   };
 }
-export default Merchant
+export default Merchant;

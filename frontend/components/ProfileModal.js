@@ -1,7 +1,15 @@
 import React from "react";
-import { showSuccess } from "../utility/notification";
-import { Circles } from "react-loading-icons";
-const ProfileModal = ({ IsProfileModal, setIsProfileModal, handleSignOut }) => {
+import { Switch } from "@headlessui/react";
+const ProfileModal = ({ IsProfileModal, setIsProfileModal, handleSignOut, isNotifications, handleSubscribe , handleUnsubscribe }) => {
+  const handleNotificationChange = (event) => { 
+    if (event)
+    {
+     handleSubscribe(); 
+    } else
+    { 
+      handleUnsubscribe();
+    }
+  }
   return (
     <div>
       {IsProfileModal ? (
@@ -74,6 +82,23 @@ const ProfileModal = ({ IsProfileModal, setIsProfileModal, handleSignOut }) => {
                     placeholder="012-345-6789"
                   />
                 </div>
+                <div className="mb-2 flex justify-between">
+                  <p>Notifications </p>
+                  
+                  <Switch
+                    checked={isNotifications}
+                    onChange={handleNotificationChange}
+                    className={`${!isNotifications ? "bg-gray-900" : "bg-green-500"}
+          relative items-center inline-flex pl-1 h-[28px] w-[56px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2  focus-visible:ring-white focus-visible:ring-opacity-75`}
+                  >
+                    <span className="sr-only">Use setting</span>
+                    <span
+                      aria-hidden="true"
+                      className={`${isNotifications ? "translate-x-6" : "translate-x-0"}
+                    pointer-events-none inline-block h-[20px] w-[20px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
+                    />
+                  </Switch>
+                </div>
                 <div></div>
               </div>
               {/*footer*/}
@@ -92,7 +117,6 @@ const ProfileModal = ({ IsProfileModal, setIsProfileModal, handleSignOut }) => {
                   Cancel
                 </button>
               </div>
-             
             </div>
           </div>
         </div>

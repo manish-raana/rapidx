@@ -19,9 +19,8 @@ import {
   WeiToEther,
   formatHexToEther,
 } from "../utility/web3";
-import moment from "moment";
+
 import { showSuccess, showError, showWarning } from "../utility/notification";
-import { getContractTxns } from "../utility/txns";
 import TxnDetail from "./TxnDetail";
 import TxnHistory from "./TxnHistory";
 import FundsModal from "./FundsModal";
@@ -108,32 +107,10 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
       });
     }
   };
-  const getBalances = async (address) => {
-    if (!address) {
-      return;
-    }
-    const url = `${process.env.NEXT_PUBLIC_COVALENT_BASE_URL}/address/${address}/balances_v2/?quote-currency=USD&format=JSON&nft=false&no-nft-fetch=true&key=ckey_df949d9e4c8243c1bc8af71a415`;
-    const response = await axios.get(url);
-    const balances = response && response.data && response.data.data && response.data.data.items;
-    //console.log("balances: ", balances);
-    const inrFiatData = balances.find((item) => item.contract_address.toLowerCase() === process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_ADDRESS.toLowerCase());
-    inrFiatData && setInrTokenBalance(WeiToEther(inrFiatData.balance));
-    const euroFiatData = balances.find(
-      (item) => item.contract_address.toLowerCase() === process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS.toLowerCase()
-    );
-    euroFiatData && setEuroTokenBalance(WeiToEther(euroFiatData.balance));
-
-    const inrLPData = balances.find((item) => item.contract_address.toLowerCase() === process.env.NEXT_PUBLIC_INR_LP_TOKEN_ADDRESS.toLowerCase());
-    inrLPData && setInrLiquidity(WeiToEther(inrLPData.balance));
-    const euroLPData = balances.find((item) => item.contract_address.toLowerCase() === process.env.NEXT_PUBLIC_EURO_LP_TOKEN_ADDRESS.toLowerCase());
-    euroLPData && setEuroLiquidity(WeiToEther(euroLPData.balance));
-  };
-
+ 
   useEffect(() => {
     if (address) {
       web3Data();
-
-      //getBalances(address);
       fetchTransactionHistory(address);
     }
   }, [address]);
@@ -284,39 +261,6 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
       }
     }
   };
-
-  const addLPTokens = async () => {
-    
-    if (typeof window !== "undefined") {
-      try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const accounts = await provider.send("eth_requestAccounts", []);
-        //console.log(accounts[0]);
-        const signer = await provider.getSigner();
-        //console.log(signer);
-      
-
-        const rapidContract = await initRapidContract();
-        const rapidContractWithSigner = await rapidContract.connect(signer);
-        const tx = await rapidContractWithSigner.addLPToken(
-          "0x744555524f4c5000000000000000000000000000000000000000000000000000",
-          "0x18707b2b4857220a72f0392fca5d5a6510d8966a"
-        );
-
-        console.log("tx:   ", tx);
-        const receipt = tx && (await tx.wait());
-        if (receipt) {
-          console.log("receipt:  ", receipt);
-          
-        }
-      } catch (error) {
-        console.log(error);
-       
-      }
-    }
-  };
-
-
   const addFunds = async () => {
     //console.log(selectedFiatCurrency);
     // console.log(fundAmount);
@@ -331,6 +275,7 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
       web3Data();
       showSuccess("Funds added successfully!");
       setAddFundsLoadingState(false);
+      setIsFundsModal(false);
     }
   };
   const withdrawFunds = async () => {
@@ -385,11 +330,11 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
       return;
     }
     try {
-      let inrFiat = `${process.env.NEXT_PUBLIC_COVALENT_BASE_URL}/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
-      let euroFiat = `${process.env.NEXT_PUBLIC_COVALENT_BASE_URL}/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
-      let inrLP = `${process.env.NEXT_PUBLIC_COVALENT_BASE_URL}/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_INR_LP_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
-      let euroLP = `${process.env.NEXT_PUBLIC_COVALENT_BASE_URL}/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_EURO_LP_TOKEN_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
-      let rapidContract = `${process.env.NEXT_PUBLIC_COVALENT_BASE_URL}/address/${address}/transfers_v2/?quote-currency=USD&format=JSON&contract-address=${process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS}&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
+      let inrFiat = `/api/contractTransactions?walletAddress=${address}&contractAddress=${process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_ADDRESS}`;
+      let euroFiat = `/api/contractTransactions?walletAddress=${address}&contractAddress=${process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS}`;
+      let inrLP = `/api/contractTransactions?walletAddress=${address}&contractAddress=${process.env.NEXT_PUBLIC_INR_LP_TOKEN_ADDRESS}`;
+      let euroLP = `/api/contractTransactions?walletAddress=${address}&contractAddress=${process.env.NEXT_PUBLIC_EURO_LP_TOKEN_ADDRESS}`;
+      let rapidContract = `/api/contractTransactions?walletAddress=${address}&contractAddress=${process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS}`;
 
       const requestOne = axios.get(inrFiat);
       const requestTwo = axios.get(euroFiat);
@@ -407,11 +352,11 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
             const responseFive = responses[4];
             //console.log('rapid:  ',responseFive)
             const data = [
-              ...responseOne.data.data.items,
-              ...responseTwo.data.data.items,
-              ...responseThree.data.data.items,
-              ...responseFour.data.data.items,
-              ...responseFive.data.data.items,
+              ...responseOne.data.items,
+              ...responseTwo.data.items,
+              ...responseThree.data.items,
+              ...responseFour.data.items,
+              ...responseFive.data.items,
             ];
             //console.log("data:  ", data);
             const transfers = await data.map((item) => item.transfers[0]);
@@ -434,29 +379,26 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
   const fetchContractTxns = async () => {
     const inrTransfers = [];
     const euroTransfers = [];
-    const inrtxns = await getContractTxns(
-      process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS,
-      process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_ADDRESS,
-      process.env.NEXT_PUBLIC_COVALENT_API_KEY
+    
+    const inrtxnsResponse = await axios.get(
+      `api/contractTransactions?walletAddress=${process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS}&contractAddress=${process.env.NEXT_PUBLIC_INR_FIAT_TOKEN_ADDRESS}`
     );
-    const inrLPtxns = await getContractTxns(
-      process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS,
-      process.env.NEXT_PUBLIC_INR_LP_TOKEN_ADDRESS,
-      process.env.NEXT_PUBLIC_COVALENT_API_KEY
+    const inrtxns = inrtxnsResponse.data.items;
+    
+    const inrLPtxnsResponse = await axios.get(
+      `api/contractTransactions?walletAddress=${process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS}&contractAddress=${process.env.NEXT_PUBLIC_INR_LP_TOKEN_ADDRESS}`
     );
-    const eurotxns = await getContractTxns(
-      process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS,
-      process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS,
-      process.env.NEXT_PUBLIC_COVALENT_API_KEY
+    const inrLPtxns = inrLPtxnsResponse.data.items;
+    
+    const eurotxnsResponse = await axios.get(
+      `api/contractTransactions?walletAddress=${process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS}&contractAddress=${process.env.NEXT_PUBLIC_EURO_FIAT_TOKEN_ADDRESS}`
     );
-    const euroLPtxns = await getContractTxns(
-      process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS,
-      process.env.NEXT_PUBLIC_EURO_LP_TOKEN_ADDRESS,
-      process.env.NEXT_PUBLIC_COVALENT_API_KEY
+    const eurotxns = eurotxnsResponse.data.items;
+    
+    const euroLPtxnsResponse = await axios.get(
+      `api/contractTransactions?walletAddress=${process.env.NEXT_PUBLIC_RAPID_CONTRACT_ADDRESS}&contractAddress=${process.env.NEXT_PUBLIC_EURO_LP_TOKEN_ADDRESS}`
     );
-
-    //console.log('inr-txns:  ', inrtxns);
-   //console.log('inr-LP-txns:  ', inrLPtxns);
+    const euroLPtxns = euroLPtxnsResponse.data.items;
     
     inrtxns.forEach((item) => { 
       const data = inrLPtxns.find((itemlp) => itemlp.tx_hash == item.tx_hash);
@@ -685,7 +627,6 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
               />
             </div>
             <div className="flex justify-between items-center w-full py-2 mb-2">
-             {/*  <button onClick={() => addLPTokens()} className="px-5 py-2 bg-orange-500 text-white rounded-lg">Add LP Tokens</button> */}
               <button
                 onClick={addLiquidity}
                 type="button"
@@ -727,13 +668,13 @@ const Cards = ({ address, addLiquidityByAdmin, addFundsByAdmin }) => {
             </div>
             <div className="flex justify-between items-center w-full py-2 mt-2">
               <p>INRLP Rewards</p>
-              <p>{(InrFeeRewards.reward * 1).toPrecision(3)} tINR</p>
-              <p>{(InrFeeRewards.share * 100).toPrecision(3)} %</p>
+              <p>{ (InrFeeRewards.reward * 1).toPrecision(3)}  tINR</p>
+              <p>{(InrFeeRewards.share * 100).toPrecision(3)}  %</p>
             </div>
             <div className="flex justify-between items-center w-full py-2 mt-2">
               <p>EUROLP Rewards</p>
-              <p>{(EuroFeeRewards.reward * 1).toPrecision(3)} tEURO</p>
-              <p>{(EuroFeeRewards.share * 100).toPrecision(3)} %</p>
+              <p>{ (EuroFeeRewards.reward * 1).toPrecision(3)}  tEURO</p>
+              <p>{(EuroFeeRewards.share * 100).toPrecision(3)}  %</p>
             </div>
             {/* <div className="flex justify-between items-center w-full py-2">
               <p>Select Currency</p>

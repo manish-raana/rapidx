@@ -12,11 +12,11 @@ const calculateFee = async (txnData) => {
     const fees = await rapidContract.calculateFeeAndCashback(txnData.sourceAmount, txnData.sourceSymbol, txnData.destinationAmount, txnData.destinationSymbol);
     //console.log(fees)
     const totalFees = await ethers.utils.formatUnits(fees[0], 4);
-   const cashback = await ethers.utils.formatUnits(fees[1], 0);
+   const cashback = await ethers.utils.formatUnits(fees[1], 18);
    const feeObj = {
-      totalFees: totalFees,
-      cashback: cashback,
-    }; 
+     totalFees: totalFees,
+     cashback: parseFloat(cashback).toPrecision(2),
+   }; 
     return feeObj;
   } catch (error) {
     console.log(error);

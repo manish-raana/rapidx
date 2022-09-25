@@ -2,6 +2,6 @@
 module.exports = {
   reactStrictMode: true,
   images: {
-    domains: [],
+    domains: ["www.iconpacks.net", "rapidx.live"],
   },
 };

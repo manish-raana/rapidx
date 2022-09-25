@@ -6,7 +6,7 @@ const FundsModal = ({ IsFundsModal, setIsFundsModal, fundAmount, fundCurrency, a
     <div>
       {IsFundsModal ? (
         <div className="w-full justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
-          <div className="relative w-[22%] mx-auto">
+          <div className="relative w-[35%] mx-auto">
             {/*content*/}
 
             <div className=" rounded-lg shadow-lg relative flex flex-col w-full bg-gray-700 outline-none focus:outline-none">

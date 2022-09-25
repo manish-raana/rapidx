@@ -1,58 +1,156 @@
 import Image from 'next/image'
 import React, { useState, useEffect } from 'react'
 import { Circles } from "react-loading-icons";
-import { sequence } from "0xsequence";
+import axios from "axios";
+import { useAccount, useConnect, useSignMessage, useDisconnect } from "wagmi";
+import { MetaMaskConnector } from "wagmi/connectors/metaMask";
+import { signIn, getSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
 import Link from 'next/link';
 import PayModal from '../components/PayModal';
-
+import { subscribe, unSubscribe, fetchNotifs, sendNotifs, checkSubscription } from "../utility/epns";
 import { getInrTokenBalance } from '../utility/web3';
+import { Switch } from "@headlessui/react";
+import { ethers } from 'ethers'
+import { showError,showSuccess, showWarning } from '../utility/notification'
 
+let notifcationCount = 0;
+const Shop = ({ user }) => {
+  const { connectAsync } = useConnect();
+  const { disconnectAsync } = useDisconnect();
+  const { isConnected } = useAccount();
+  const { signMessageAsync } = useSignMessage();
 
-
-const Shop = () => {
-  const [LoggedIn, setLoggedIn] = useState(false);
-  const [isLoading, setisLoading] = useState(false);
+ const [LoggedIn, setLoggedIn] = useState(user ? true : false);
+  const [IsLoading, setIsLoading] = useState(false);
   const [ShowModal, setShowModal] = useState(false);
   const [WalletAddress, setWalletAddress] = useState('');
   const [WalletBalance, setWalletBalance] = useState(0);
   const [Wallet, setWallet] = useState(null);
- 
+  const [notifications, setnotifications] = useState([]);
+  const [enabled, setEnabled] = useState(false)
+
   const router = useRouter();
 
-  
-   
-  const handleLogin = async () => { 
-    setisLoading(true);
+  const checkSubscriptionStatus = async (address) => {
     try {
-      const wallet = await sequence.initWallet("mumbai");
-      const connectDetails = await wallet.connect({
-        app: "RapidX",
-        authorize: true,
-       
+      const status = await checkSubscription(process.env.NEXT_PUBLIC_EPNS_OFFERS_CHANNEL_ADDRESS, address);
+      
+      console.log('status:  ',status)
+      setEnabled(status)
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleSubscribe = async () => {
+    if (typeof window !== "undefined") {
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        // Prompt user for account connections
+        await provider.send("eth_requestAccounts", []);
+        const _signer = provider.getSigner();
+        
+        //console.log("Account:", await signer.getAddress());
+        const address = await _signer.getAddress();
+        
+        const status = await subscribe(process.env.NEXT_PUBLIC_EPNS_OFFERS_CHANNEL_ADDRESS, address, _signer);
+        if (status === true)
+        {
+          setEnabled(!enabled);
+        } else
+        { 
+          setEnabled(false);
+        }
+      } catch (error)
+      {
+        console.log('shop-error: ',error)
+        setEnabled(false);
+      }
+    }
+  };
+  const handleUnsubscribe = async () => {
+    if (typeof window !== "undefined") {
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        // Prompt user for account connections
+        await provider.send("eth_requestAccounts", []);
+        const _signer = provider.getSigner();
+        //console.log("Account:", await signer.getAddress());
+        const address = await _signer.getAddress();
+        const status = await unSubscribe(process.env.NEXT_PUBLIC_EPNS_OFFERS_CHANNEL_ADDRESS, address, _signer);
+        if (status === true) {
+          setEnabled(!enabled);
+        } else {
+          setEnabled(false);
+        }
+      } catch (error) {
+        console.log(error);
+        setEnabled(false);
+      }
+    }
+  };
+  const getNotifications = async (address) => {
+    try {
+      const notifs = await fetchNotifs(address);
+      if (notifs) {
+        setnotifications(notifs);
+      }
+    } catch (error) {
+      console.log("error:  ", error);
+    }
+  };
+   
+  const handleLogin = async () => {
+    setIsLoading(true);
+    try {
+      if (isConnected) {
+        await disconnectAsync();
+      }
+
+      const { account, chain } = await connectAsync({ connector: new MetaMaskConnector() });
+
+      const userData = { address: account, chain: chain.id, network: "evm" };
+
+      const { data } = await axios.post("/api/auth/request-message", userData, {
+        headers: {
+          "content-type": "application/json",
+        },
       });
 
-      if (connectDetails.connected) {
+      const message = data.message;
+
+      const signature = await signMessageAsync({ message });
+
+      // redirect user after success authentication to '/user' page
+      const { url } = await signIn("credentials", { message, signature, redirect: false, callbackUrl: "/user" });
+      if (url) {
+        
+        setWalletAddress(userData.address);
+        getTokenBalance(userData.address);
+        getNotifications(userData.address);
+        checkSubscriptionStatus(userData.address);
+        showSuccess("Authentication Successfull");
         setLoggedIn(true);
       }
-      setisLoading(false);
-    } catch (error)
-    {
-      setisLoading(true);
-      console.log(error)
+      //console.log(url);
+
+      /**
+       * instead of using signIn(..., redirect: "/user")
+       * we get the url from callback and push it to the router to avoid page refreshing
+       */
+      //push(url);
+      setIsLoading(false);
+    } catch (error) {
+      //console.log("error: ", error);
+      showError(`Authentication Failed!`);
+      setIsLoading(false);
     }
-  } 
-  const handleSignOut = async() => {
-    try
-    {
-      const wallet = sequence.getWallet();
-      await wallet.disconnect()
-      setLoggedIn(false);
-    } catch (error)
-    { 
-      console.log(error)
-    }
-   }
+  };
+  const handleSignOut = () => {
+    setLoggedIn(false);
+    signOut({ redirect: "/shop" });
+  };
+
   const handleSuccess = async (hash) => { 
     router.push({
       pathname: "/payment",
@@ -67,40 +165,35 @@ const Shop = () => {
       console.log(error);
     }
   };
-  const getWallet = async () => {
-    try
-    {
-      await sequence.initWallet("mumbai");
-      const wallet = sequence.getWallet();
-      setWallet(wallet)
-      const walletAddress = await wallet.getAddress();
-      //console.log('address: ', walletAddress);
-      if (walletAddress)
-      {
-      
-        setLoggedIn(true);
-        setWalletAddress(walletAddress);
-        getTokenBalance(walletAddress);
-      }
-    } catch (error)
-    {
-      console.log(error);
-    }
+  
+const handleNotificationChange = (event) => {
+  console.log(event)
+  
+  if(event){
+    handleSubscribe();
+  }else{
+      handleUnsubscribe();
   }
-  const openWallet = () => { 
-    if (Wallet)
-    { 
-     try {
-       Wallet.openWallet();
-     } catch (error) {
-      console.log(error)
-     }
-    }
-  }
+ 
+}
   useEffect(() => {
-   console.log('init shop comp')
-   getWallet()
-  }, []);
+   //console.log('init shop comp')
+    console.log('user:   ',user)
+    if (user)
+    { 
+      const address = user.user.address;
+      setWalletAddress(address);
+      checkSubscriptionStatus(address);
+      setLoggedIn(true);
+      getTokenBalance(address);
+      getNotifications(address);
+
+      setInterval(() => {
+        getTokenBalance(address);
+        getNotifications(address);
+       }, 5000);
+    }
+  }, [user]);
   return (
     <div className="h-full w-full py-5">
       <PayModal
@@ -124,7 +217,7 @@ const Shop = () => {
               className="flex px-5 py-2 rounded md:rounded-lg bg-green-500 hover:bg-green-600 font-bold text-slate-900"
               onClick={() => handleLogin()}
             >
-              {!isLoading ? (
+              {!IsLoading ? (
                 "LOGIN"
               ) : (
                 <span className="flex text-white items-center justify-center">
@@ -134,13 +227,26 @@ const Shop = () => {
             </button>
           </div>
         ) : (
-          <div className="flex items-end">
-            <button
-              onClick={() => openWallet()}
-              className="mx-5 px-5 py-2 bg-orange-500 rounded-lg text-black hover:bg-orange-700 hover:text-white font-bold"
-            >
-              Open Wallet
-            </button>
+          <div className="flex items-center">
+            <div className="flex items-center mr-5">
+              <label htmlFor="" className="text-white font-bold mr-2">
+                Alerts
+              </label>
+              <Switch
+                checked={enabled}
+                onChange={handleNotificationChange}
+                className={`${!enabled ? "bg-gray-800" : "bg-green-500"}
+          relative items-center inline-flex pl-1 h-[28px] w-[56px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2  focus-visible:ring-white focus-visible:ring-opacity-75`}
+              >
+                <span className="sr-only">Use setting</span>
+                <span
+                  aria-hidden="true"
+                  className={`${enabled ? "translate-x-6" : "translate-x-0"}
+                    pointer-events-none inline-block h-[20px] w-[20px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
+                />
+              </Switch>
+            </div>
+
             <button
               className="px-5 py-2 rounded-lg bg-rose-500 hover:text-white hover:bg-rose-600 font-bold text-slate-900"
               onClick={() => handleSignOut()}
@@ -226,9 +332,34 @@ const Shop = () => {
             </div>
           </div>
         </div>
+        <div className="w-full px-10">
+          <p className="text-center text-white font-bold text-3xl">Best Deals</p>
+          <div className="mt-5 flex flex-wrap">
+            {notifications &&
+              notifications.map((oneNotification, i) => {
+                const { cta,sid, title, message, app, icon, image, url, blockchain, notification } = oneNotification;
+                
+                return (
+                  <div key={sid} className="flex w-[30%] mb-2 mx-2 boder-2 bg-violet-500 px-2 py-4 border-rose-500 rounded-lg">
+                    <img src={image} className="h-20" alt="image" />
+                    <div className="mx-5">
+                      <p className="text-white font-bold text-2xl">{title}</p>
+                      <p className="text-white">{message}</p>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-
+export async function getServerSideProps(context) {
+    const session = await getSession(context);
+    //console.log(session);
+    return {
+      props: { user: session },
+    };
+}
 export default Shop
