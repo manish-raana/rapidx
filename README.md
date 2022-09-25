@@ -58,12 +58,19 @@ Buyer Currency: INR
 
 ## Sponsors used:
 
-1.  Ethereum Push Notification Service (EPNS):
-a.  Create A Channel for polygon-mumbai : PaymentConfirmationPM
-b.  Developed the smart contract (Notifications.sol) to call the sendNotification function using IPUSHCommInterface for the below address.
-    EPNS_COMM_ADDRESS = 0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa
-c.  The above smart contract is inherited in our Rapid smart contract to send the notifications. We have added the Rapid smart address  (0x351FFC593052D8D876FB0d24A18e5645b9f709ec) as a delegate to the PaymentConfirmationPM channel
-d.  sendNotification function is called inside transferFiat function (Rapid Smart Contract). Whenever the transferFiat function is called notification will be sent to Merchants.
+- Ethereum Push Notification Service (EPNS):
+    a. Create A Channel for polygon-mumbai : PaymentConfirmationPM
+    
+    b. Developed the smart contract (Notifications.sol) to call the sendNotification function using IPUSHCommInterface for the below address.
+       EPNS_COMM_ADDRESS = 0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa
+       
+    c. The above smart contract is inherited in our Rapid smart contract to send the notifications. We have added the Rapid smart address      (0x351FFC593052D8D876FB0d24A18e5645b9f709ec) as a delegate to the PaymentConfirmationPM channel
+    
+    d. sendNotification function is called inside transferFiat function (Rapid Smart Contract). Whenever the transferFiat function is called notification    will be sent to Merchants.
+    
+- Web3.Storage for string images for EPNS notifications.
+- Worldcoin - Merchant Identity verification for fraud detection
+  
 
 
 ## Front end tech stack
