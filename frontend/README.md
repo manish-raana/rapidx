@@ -39,30 +39,60 @@ Buyer Currency: INR
 - Option to withdraw funds to bank account
 
 
-## Deployment details: (MAINNET)
+## Deployment details: (Mumbai Polygon)
 
-- Rapid Protocal deployed to: 0xE9Afc044917Ee2CbAF33Cb191284e170ad07B403 (https://polygonscan.com/address/0xE9Afc044917Ee2CbAF33Cb191284e170ad07B403)
-- euro Fiat Token deployed to: 0x62656Be046e02f3eE9B899d5a6b0be02da375A91 (https://polygonscan.com/address/0x62656Be046e02f3eE9B899d5a6b0be02da375A91)
-- rupee Fiat Token deployed to: 0x0eCc96Cb7DaCEcC04a53B91Ac102b51D5585C925 (https://polygonscan.com/address/0x0eCc96Cb7DaCEcC04a53B91Ac102b51D5585C925)
-- usd Fiat Token deployed to: 0xc42158cB1bd79732beD475d2C29A500E35e9dD5E (https://polygonscan.com/address/0xc42158cB1bd79732beD475d2C29A500E35e9dD5E)
-- euro LP Token deployed to: 0x18707b2b4857220A72F0392Fca5D5A6510D8966A (https://polygonscan.com/address/0x18707b2b4857220A72F0392Fca5D5A6510D8966A)
-- rupee LP Token deployed to: 0xf201DC6389AB9d0f82baAFf20b080466ab7346Ec (https://polygonscan.com/address/0xf201DC6389AB9d0f82baAFf20b080466ab7346Ec)
-- usd LP Token deployed to: 0x02C7C267131e94Cd3acC71B75817BCc897129a62 (https://polygonscan.com/address/0x02C7C267131e94Cd3acC71B75817BCc897129a62)
+- Rapid Protocal deployed to: 0x351FFC593052D8D876FB0d24A18e5645b9f709ec (https://polygonscan.com/address/0x351FFC593052D8D876FB0d24A18e5645b9f709ec)
+- euro Fiat Token deployed to: 0x528ccA2F508306d41c8f28A10703e275dC9aa8FF (https://polygonscan.com/address/0x528ccA2F508306d41c8f28A10703e275dC9aa8FF)
+- rupee Fiat Token deployed to: 0x9732364A18Cba18E26C2dE9832ffB227b045e6Df (https://polygonscan.com/address/0x9732364A18Cba18E26C2dE9832ffB227b045e6Df)
+- usd Fiat Token deployed to: 0xD5C993409a743521cD490c59a394f5f9Ae77a8d4 (https://polygonscan.com/address/0xD5C993409a743521cD490c59a394f5f9Ae77a8d4)
+- euro LP Token deployed to: 0x9416B862a8244bd9f61F60aB386Da8BA9FccbFa4 (https://polygonscan.com/address/0x9416B862a8244bd9f61F60aB386Da8BA9FccbFa4)
+- rupee LP Token deployed to: 0x224E3F2eB146Ed30aB0c904dB992c42aD5207592 (https://polygonscan.com/address/0x224E3F2eB146Ed30aB0c904dB992c42aD5207592)
+- usd LP Token deployed to: 0xDB1bd4a9988b9240104B43F5d4471EfF64bc8ABB (https://polygonscan.com/address/0xDB1bd4a9988b9240104B43F5d4471EfF64bc8ABB)
 
 
 ## Blockchain Tech Stack
 
-- ERC20 Token standard for Fiat tokens
-- LP Tokens and Governance Tokens
-- Rapid Smart Contract to add liquidity
-- withdraw liquidity and transfer function to do cross border Transactions.
-
+1.  ERC20 Token standard for Fiat tokens, LP Tokens and Governance Tokens
+2.  Rapid Smart Contract to add liquidity, withdraw liquidity and transfer function to do cross border Transactions.
+3.  Events emitted for add liquidity, withdraw liquidity, and transfer function.
 
 ## Sponsors used:
 
-- Moralis - Metamask authentication on frontend
-- ChainLink - Live price feed in smart contract
-- Sequence wallet for Web3 in User CheckOut page
+### - Ethereum Push Notification Service (EPNS):
+    a. Create A Channel for polygon-mumbai : PaymentConfirmationPM
+    
+    b. Developed the smart contract (Notifications.sol) to call the sendNotification function using IPUSHCommInterface for the below address.
+       EPNS_COMM_ADDRESS = 0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa
+       
+    c. The above smart contract is inherited in our Rapid smart contract to send the notifications. We have added the Rapid smart address      (0x351FFC593052D8D876FB0d24A18e5645b9f709ec) as a delegate to the PaymentConfirmationPM channel
+    
+    d. sendNotification function is called inside transferFiat function (Rapid Smart Contract). Whenever the transferFiat function is called notification    will be sent to Merchants
+    
+    e. Notifications are subscribed by the seller on frontend, once the transaction is successfull on blockchain, merchant receives the notifications
+    
+    f. Notification history is also available to see the past transaction notifications
+    
+    e. Seller can also send offers to their buyers by sending a notification from our frontend on merchant page and buyer on shop page receives those   notifications in real time
+    
+    
+### - Web3.Storage for saving images for EPNS notifications.
+   
+    a. Installed web3.storage sdk and initialised in AddOfferModal component
+    
+    b. Image file is uploaded to using web3.storage and CID is used for sending that file url to EPNS notification
+    
+    c. On shop page file url is extracted from EPNS notification and displayed
+    
+### - Worldcoin - Merchant Identity verification for fraud detection
+   
+    a. Added worldcoin js sdk in worldcoin component
+    
+    b. Worldcoin-widget is added in worldcoin component and sending request to backend for verification on simulator success event
+    
+    c. On backend used worldcoin api to check the merchant authenticity and send the verfication status back to frontend
+    
+    d. If the user is verified merchant will be able to complete the profile
+  
 
 
 ## Front end tech stack
