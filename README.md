@@ -66,10 +66,32 @@ Buyer Currency: INR
        
     c. The above smart contract is inherited in our Rapid smart contract to send the notifications. We have added the Rapid smart address      (0x351FFC593052D8D876FB0d24A18e5645b9f709ec) as a delegate to the PaymentConfirmationPM channel
     
-    d. sendNotification function is called inside transferFiat function (Rapid Smart Contract). Whenever the transferFiat function is called notification    will be sent to Merchants.
+    d. sendNotification function is called inside transferFiat function (Rapid Smart Contract). Whenever the transferFiat function is called notification    will be sent to Merchants
     
-- Web3.Storage for string images for EPNS notifications.
+    e. Notifications are subscribed by the seller on frontend, once the transaction is successfull on blockchain, merchant receives the notifications
+    
+    f. Notification history is also available to see the past transaction notifications
+    
+    e. Seller can also send offers to their buyers by sending a notification from our frontend on merchant page and buyer on shop page receives those   notifications in real time
+    
+    
+- Web3.Storage for saving images for EPNS notifications.
+   
+    a. Installed web3.storage sdk and initialised in AddOfferModal component
+    
+    b. Image file is uploaded to using web3.storage and CID is used for sending that file url to EPNS notification
+    
+    c. On shop page file url is extracted from EPNS notification and displayed
+    
 - Worldcoin - Merchant Identity verification for fraud detection
+   
+    a. Added worldcoin js sdk in worldcoin component
+    
+    b. Worldcoin-widget is added in worldcoin component and sending request to backend for verification on simulator success event
+    
+    c. On backend used worldcoin api to check the merchant authenticity and send the verfication status back to frontend
+    
+    d. If the user is verified merchant will be able to complete the profile
   
 
 
