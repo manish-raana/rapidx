@@ -39,7 +39,7 @@ Buyer Currency: INR
 - Option to withdraw funds to bank account
 
 
-## Deployment details: (MAINNET)
+## Deployment details: (Mumbai Polygon)
 
 - Rapid Protocal deployed to: 0x351FFC593052D8D876FB0d24A18e5645b9f709ec (https://polygonscan.com/address/0x351FFC593052D8D876FB0d24A18e5645b9f709ec)
 - euro Fiat Token deployed to: 0x528ccA2F508306d41c8f28A10703e275dC9aa8FF (https://polygonscan.com/address/0x528ccA2F508306d41c8f28A10703e275dC9aa8FF)
