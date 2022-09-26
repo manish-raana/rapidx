@@ -6,7 +6,7 @@
  The project involves on-ramp and off-ramp of FIAT. It is acheived through the Open Banking Tools as it will drastically reduce the costs. Project involves tokenization of FIAT, swapping and de-tokenizing and off-ramp. 
 
 
-## Live demo Links (we deployed it to mainnet :D ):
+## Live demo Links (we deployed it to Mumbai Polygon :D ):
 
 https://rapidx.live/shop
 Merchant Currency: euro
@@ -94,7 +94,10 @@ Buyer Currency: INR
     d. If the user is verified merchant will be able to complete the profile
   
 
-
+### Covalent - Used for fetching transaction history of ERC20 transactions for a wallet and other contracts on merchant page and liquidity page
+   - (https://rapidx.live/merchant)
+   - (https:rapidx.live/liquidity)
+   
 ## Front end tech stack
 
 - NextJs
