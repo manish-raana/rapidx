@@ -41,13 +41,13 @@ Buyer Currency: INR
 
 ## Deployment details: (Mumbai Polygon)
 
-- Rapid Protocal deployed to: 0x351FFC593052D8D876FB0d24A18e5645b9f709ec (https://polygonscan.com/address/0x351FFC593052D8D876FB0d24A18e5645b9f709ec)
-- euro Fiat Token deployed to: 0x528ccA2F508306d41c8f28A10703e275dC9aa8FF (https://polygonscan.com/address/0x528ccA2F508306d41c8f28A10703e275dC9aa8FF)
-- rupee Fiat Token deployed to: 0x9732364A18Cba18E26C2dE9832ffB227b045e6Df (https://polygonscan.com/address/0x9732364A18Cba18E26C2dE9832ffB227b045e6Df)
-- usd Fiat Token deployed to: 0xD5C993409a743521cD490c59a394f5f9Ae77a8d4 (https://polygonscan.com/address/0xD5C993409a743521cD490c59a394f5f9Ae77a8d4)
-- euro LP Token deployed to: 0x9416B862a8244bd9f61F60aB386Da8BA9FccbFa4 (https://polygonscan.com/address/0x9416B862a8244bd9f61F60aB386Da8BA9FccbFa4)
-- rupee LP Token deployed to: 0x224E3F2eB146Ed30aB0c904dB992c42aD5207592 (https://polygonscan.com/address/0x224E3F2eB146Ed30aB0c904dB992c42aD5207592)
-- usd LP Token deployed to: 0xDB1bd4a9988b9240104B43F5d4471EfF64bc8ABB (https://polygonscan.com/address/0xDB1bd4a9988b9240104B43F5d4471EfF64bc8ABB)
+- Rapid Protocal deployed to: 0x351FFC593052D8D876FB0d24A18e5645b9f709ec (https://mumbai.polygonscan.com/address/0x351FFC593052D8D876FB0d24A18e5645b9f709ec)
+- euro Fiat Token deployed to: 0x528ccA2F508306d41c8f28A10703e275dC9aa8FF (https://mumbai.polygonscan.com/address/0x528ccA2F508306d41c8f28A10703e275dC9aa8FF)
+- rupee Fiat Token deployed to: 0x9732364A18Cba18E26C2dE9832ffB227b045e6Df (https://mumbai.polygonscan.com/address/0x9732364A18Cba18E26C2dE9832ffB227b045e6Df)
+- usd Fiat Token deployed to: 0xD5C993409a743521cD490c59a394f5f9Ae77a8d4 (https://mumbai.polygonscan.com/address/0xD5C993409a743521cD490c59a394f5f9Ae77a8d4)
+- euro LP Token deployed to: 0x9416B862a8244bd9f61F60aB386Da8BA9FccbFa4 (https://mumbai.polygonscan.com/address/0x9416B862a8244bd9f61F60aB386Da8BA9FccbFa4)
+- rupee LP Token deployed to: 0x224E3F2eB146Ed30aB0c904dB992c42aD5207592 (https://mumbai.polygonscan.com/address/0x224E3F2eB146Ed30aB0c904dB992c42aD5207592)
+- usd LP Token deployed to: 0xDB1bd4a9988b9240104B43F5d4471EfF64bc8ABB (https://mumbai.polygonscan.com/address/0xDB1bd4a9988b9240104B43F5d4471EfF64bc8ABB)
 
 
 ## Blockchain Tech Stack
