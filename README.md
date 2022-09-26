@@ -94,8 +94,9 @@ Buyer Currency: INR
     d. If the user is verified merchant will be able to complete the profile
   
 
-## Covalent - Used for fetching transaction history of ERC20 transactions for a wallet on merchant page and liquidity page
-   - (https://rapidx.live/merchant)(https:rapidx.live/liquidity)
+### Covalent - Used for fetching transaction history of ERC20 transactions for a wallet on merchant page and liquidity page
+   - (https://rapidx.live/merchant)
+   - (https:rapidx.live/liquidity)
    
 ## Front end tech stack
 
