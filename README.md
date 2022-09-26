@@ -6,7 +6,7 @@
  The project involves on-ramp and off-ramp of FIAT. It is acheived through the Open Banking Tools as it will drastically reduce the costs. Project involves tokenization of FIAT, swapping and de-tokenizing and off-ramp. 
 
 
-## Live demo Links (we deployed it to mainnet :D ):
+## Live demo Links (we deployed it to Mumbai Polygon :D ):
 
 https://rapidx.live/shop
 Merchant Currency: euro
